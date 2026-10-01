@@ -77,7 +77,7 @@ export function Footer() {
                   {col.title}
                 </p>
                 <ul className="space-y-2">
-                  {col.items.map((item) => (
+                  {(col.links || []).map((item) => (
                     <li key={item.label}>
                       <Link
                         href={item.href}
