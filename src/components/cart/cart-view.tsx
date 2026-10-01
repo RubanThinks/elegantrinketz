@@ -471,7 +471,7 @@ export function CartView() {
             </Button>
 
             <p className="text-[11px] text-center text-neutral-400 font-light">
-              Orders confirmed via official WhatsApp at {siteConfig.whatsappNumber}
+              Orders confirmed via official WhatsApp at {siteConfig.whatsappNumberFormatted}
             </p>
           </div>
         </div>

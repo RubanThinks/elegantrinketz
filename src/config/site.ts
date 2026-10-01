@@ -28,7 +28,8 @@ export const siteConfig = {
   email: "",
   phone: "+91 93452 46835",
   phoneNumbers: ["+91 93452 46835", "+91 98404 18605"],
-  whatsappNumber: "919345246835",
+  whatsappNumber: "919840418605",
+  whatsappNumberFormatted: "+91 98404 18605",
   address: {
     street: "No 27/5, C1, 1st floor, Anna Nagar 2nd Avenue",
     area: "Block C, C Block, Anna Nagar",
@@ -59,7 +60,7 @@ export const siteConfig = {
   social: {
     instagram: "",
     facebook: "",
-    whatsapp: "https://wa.me/919345246835",
+    whatsapp: "https://wa.me/919840418605",
   },
 
   /** SEO defaults */
