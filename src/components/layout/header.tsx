@@ -24,7 +24,7 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 15);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -38,41 +38,42 @@ export function Header() {
     <>
       <header
         className={cn(
-          "sticky top-0 z-40 w-full transition-all duration-300 bg-white/95 backdrop-blur-sm border-b",
+          "sticky top-0 z-40 w-full transition-all duration-300 bg-white/95 backdrop-blur-md border-b",
           isScrolled
-            ? "border-[#e8e0d8] shadow-[0_2px_10px_rgba(0,0,0,0.04)] py-2"
-            : "border-[#e8e0d8]/50 py-3 sm:py-4"
+            ? "border-rose-100 shadow-[0_4px_16px_rgba(225,29,72,0.05)] py-2"
+            : "border-rose-100/60 py-2.5 sm:py-3.5"
         )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4">
+          {/* Main Top Row */}
+          <div className="flex items-center justify-between gap-3 sm:gap-4">
             {/* Mobile Hamburger (left on mobile) */}
             <div className="flex items-center lg:hidden">
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(true)}
                 aria-label="Open navigation menu"
-                className="p-2 -ml-2 text-[#1a1a1a] hover:text-black focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
+                className="p-2 -ml-2 text-neutral-800 hover:text-rose-600 focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-lg active:scale-95 transition-transform"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="w-5 h-5 stroke-[2]" />
               </button>
             </div>
 
-            {/* Brand Logo & Name with Circular Placeholder */}
+            {/* Brand Logo & Stylish High-Fashion Name */}
             <div className="flex items-center">
               <Link
                 href="/"
-                className="group inline-flex items-center gap-2.5 sm:gap-3 transition-opacity hover:opacity-95"
+                className="group inline-flex items-center gap-2 sm:gap-3 transition-opacity hover:opacity-95"
                 aria-label={`${siteConfig.name} — Home`}
               >
-                {/* Circular Placeholder for Logo */}
+                {/* Logo Halo */}
                 <div
                   className={cn(
-                    "relative rounded-full p-[1.5px] bg-gradient-to-tr from-[#D4AF37] via-[#F6E27A] to-[#B8860B] shadow-xs group-hover:shadow-md transition-all duration-300 shrink-0",
-                    isScrolled ? "w-9 h-9 sm:w-10 sm:h-10" : "w-10 h-10 sm:w-11 sm:h-11"
+                    "relative rounded-full p-[1.5px] bg-gradient-to-tr from-rose-400 via-pink-300 to-rose-500 shadow-xs group-hover:shadow-md transition-all duration-300 shrink-0",
+                    isScrolled ? "w-8 h-8 sm:w-10 sm:h-10" : "w-9 h-9 sm:w-11 sm:h-11"
                   )}
                 >
-                  <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center p-[2px]">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center p-[1px]">
                     <Image
                       src={siteConfig.logo}
                       alt={siteConfig.name}
@@ -84,12 +85,12 @@ export function Header() {
                   </div>
                 </div>
 
-                {/* Brand Wordmark & Tagline */}
+                {/* Stylish Brand Wordmark & Tagline */}
                 <div className="flex flex-col text-left">
-                  <span className="font-serif font-bold text-sm sm:text-base text-[#1a1a1a] tracking-tight sm:tracking-wide leading-tight group-hover:text-[#D4AF37] transition-colors">
+                  <span className="font-serif italic font-bold text-base sm:text-lg tracking-wide text-neutral-900 group-hover:text-rose-600 transition-colors">
                     {siteConfig.name}
                   </span>
-                  <span className="text-[8px] sm:text-[9.5px] uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#888] font-medium leading-tight hidden xs:block">
+                  <span className="text-[7.5px] sm:text-[9px] uppercase tracking-[0.2em] text-rose-500 font-semibold leading-tight hidden xs:block">
                     {siteConfig.tagline}
                   </span>
                 </div>
@@ -111,14 +112,14 @@ export function Header() {
                       className={cn(
                         "text-xs uppercase tracking-wider font-semibold py-1.5 transition-colors relative",
                         isActive
-                          ? "text-[#D4AF37] font-bold"
-                          : "text-[#1a1a1a] hover:text-[#D4AF37]"
+                          ? "text-rose-600 font-bold"
+                          : "text-neutral-700 hover:text-rose-600"
                       )}
                     >
                       {item.label}
                       <span
                         className={cn(
-                          "absolute left-0 -bottom-0.5 w-full h-[2px] bg-[#D4AF37] transition-transform duration-200 origin-left rounded-full",
+                          "absolute left-0 -bottom-0.5 w-full h-[2px] bg-rose-500 transition-transform duration-200 origin-left rounded-full",
                           isActive
                             ? "scale-x-100"
                             : "scale-x-0 group-hover:scale-x-100"
@@ -129,12 +130,12 @@ export function Header() {
                     {/* Desktop Dropdown Menu if children present */}
                     {item.children && (
                       <div className="absolute left-0 top-full pt-2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
-                        <div className="bg-white border border-[#e8e0d8] shadow-lg py-2 min-w-[200px]">
+                        <div className="bg-white border border-rose-100 rounded-xl shadow-xl py-2 min-w-[210px] backdrop-blur-md">
                           {item.children.map((sub) => (
                             <Link
                               key={sub.label}
                               href={sub.href}
-                              className="block px-4 py-2 text-xs text-[#666] hover:text-[#1a1a1a] hover:bg-[#fff9f5] transition-colors"
+                              className="block px-4 py-2 text-xs font-medium text-neutral-600 hover:text-rose-600 hover:bg-rose-50/60 transition-colors"
                             >
                               {sub.label}
                             </Link>
@@ -148,45 +149,45 @@ export function Header() {
             </nav>
 
             {/* Header Action Icons */}
-            <div className="flex items-center space-x-1 sm:space-x-2.5">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               {/* WhatsApp CTA — desktop only */}
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Chat on WhatsApp"
-                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#25D366] border border-[#25D366]/30 rounded-full hover:bg-[#25D366]/10 transition-colors"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors"
               >
                 <WhatsAppIcon className="w-3.5 h-3.5" />
                 <span>Chat</span>
               </a>
 
-              {/* Search */}
+              {/* Desktop Search Icon */}
               <Link
                 href="/search"
                 aria-label="Search products"
-                className="p-2 text-[#1a1a1a]/70 hover:text-[#1a1a1a] transition-colors focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
+                className="hidden lg:inline-flex p-2 text-neutral-700 hover:text-rose-600 transition-colors focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-full"
               >
-                <Search className="w-5 h-5 stroke-[1.5]" />
+                <Search className="w-5 h-5 stroke-[1.8]" />
               </Link>
 
-              {/* Account (hidden on mobile, accessible via drawer) */}
+              {/* Account (desktop) */}
               <Link
                 href={isAuthenticated ? "/account" : "/login"}
                 aria-label={isAuthenticated ? "My Account" : "Sign In"}
-                className="hidden sm:inline-flex p-2 text-[#1a1a1a]/70 hover:text-[#1a1a1a] transition-colors focus:outline-none focus:ring-1 focus:ring-[#D4AF37] items-center justify-center"
+                className="hidden sm:inline-flex p-2 text-neutral-700 hover:text-rose-600 transition-colors focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-full items-center justify-center"
               >
                 {isAuthenticated && user?.photoURL ? (
                   <Image
                     src={user.photoURL}
                     alt={profile?.displayName || "Account"}
-                    width={20}
-                    height={20}
+                    width={22}
+                    height={22}
                     unoptimized
-                    className="w-5 h-5 rounded-full object-cover ring-1.5 ring-[#D4AF37]"
+                    className="w-5 h-5 rounded-full object-cover ring-1.5 ring-rose-400"
                   />
                 ) : (
-                  <User className={cn("w-5 h-5 stroke-[1.5]", isAuthenticated && "text-[#D4AF37]")} />
+                  <User className={cn("w-5 h-5 stroke-[1.8]", isAuthenticated && "text-rose-600")} />
                 )}
               </Link>
 
@@ -194,11 +195,11 @@ export function Header() {
               <Link
                 href="/wishlist"
                 aria-label="Wishlist"
-                className="p-2 text-[#1a1a1a]/70 hover:text-[#1a1a1a] transition-colors relative focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
+                className="p-2 text-neutral-700 hover:text-rose-600 transition-colors relative focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-full active:scale-90"
               >
-                <Heart className="w-5 h-5 stroke-[1.5]" />
+                <Heart className="w-5 h-5 stroke-[1.8]" />
                 {wishlistCount > 0 && (
-                  <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#E9A0B8] text-white text-[10px] font-bold flex items-center justify-center leading-none animate-scale-in">
+                  <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs animate-scale-in">
                     {wishlistCount > 99 ? "99+" : wishlistCount}
                   </span>
                 )}
@@ -209,11 +210,11 @@ export function Header() {
               <Link
                 href="/cart"
                 aria-label={`Shopping Bag (${itemCount} items)`}
-                className="p-2 text-[#1a1a1a]/70 hover:text-[#1a1a1a] transition-colors relative focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
+                className="p-2 text-neutral-700 hover:text-rose-600 transition-colors relative focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-full active:scale-90"
               >
-                <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
+                <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
                 {itemCount > 0 && (
-                  <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#111111] text-white text-[10px] font-bold flex items-center justify-center leading-none animate-scale-in">
+                  <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs animate-scale-in">
                     {itemCount > 99 ? "99+" : itemCount}
                   </span>
                 )}
@@ -221,10 +222,23 @@ export function Header() {
               </Link>
             </div>
           </div>
+
+          {/* Native Mobile App Search Pill (Visible only on mobile) */}
+          <div className="mt-2.5 lg:hidden">
+            <Link
+              href="/search"
+              className="w-full h-9 px-3.5 rounded-full bg-rose-50/70 hover:bg-rose-100/60 border border-rose-200/70 flex items-center gap-2.5 text-xs text-neutral-500 shadow-2xs transition-colors"
+            >
+              <Search className="w-4 h-4 text-rose-500 shrink-0" />
+              <span className="font-light tracking-wide truncate">
+                Search kurtis, frocks, gowns, trinketz...
+              </span>
+            </Link>
+          </div>
         </div>
       </header>
 
-      {/* Mobile Drawer */}
+      {/* Simplified E-Commerce Mobile App Drawer */}
       <MobileDrawer
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}

@@ -2,56 +2,54 @@
 
 :root {
   /* ═══════════════════════════════════════════════════
-     Elegant Trinketz — Brand Design System
-     BLACK + WHITE/CREAM with PINK + GOLD accents
+     Elegant Trinketz — E-Commerce Brand Design System
+     Vibrant White + Pink Palette (Inspired by Purplle, Nykaa & Myntra)
+     Mobile-App Native Feel
   ═══════════════════════════════════════════════════ */
 
-  /* Core surfaces */
-  --background: #fdfdfc;
-  --foreground: #1a1a1a;
+  /* Core surfaces — Pristine white with delicate blush undertones */
+  --background: #ffffff;
+  --foreground: #1f2937;
   --surface: #ffffff;
-  --surface-muted: #fff9f5;
-  --border: #e8e0d8;
-  --border-muted: #f3ede8;
+  --surface-muted: #fff1f2;
+  --border: #fce7f3;
+  --border-muted: #fef2f2;
 
-  /* Primary — Black (dominant brand color) */
-  --primary: #111111;
-  --primary-hover: #000000;
+  /* Primary — Vibrant E-Commerce Rose Pink */
+  --primary: #e11d48;
+  --primary-hover: #be123c;
   --primary-foreground: #ffffff;
 
-  /* Secondary — Warm Gold (premium details) */
-  --secondary: #C9A227;
+  /* Secondary — Soft Romantic Rose / Coral */
+  --secondary: #fb7185;
   --secondary-foreground: #ffffff;
 
   /* Muted backgrounds & text */
-  --muted: #f8f4f0;
-  --muted-foreground: #8b7e74;
+  --muted: #fff1f2;
+  --muted-foreground: #6b7280;
 
-  /* Accent — Soft Feminine Pink */
-  --accent: #E9A0B8;
-  --accent-soft: #fdf2f6;
+  /* Accent — Bubblegum & Blush Pinks */
+  --accent: #f43f5e;
+  --accent-soft: #fff1f2;
   --accent-foreground: #9f1239;
 
-  /* Gold variations */
-  --gold: #D4AF37;
-  --gold-light: #E6C76A;
-  --gold-dark: #C9A227;
+  /* Gold jewellery highlights for luxury accents */
+  --gold: #d4af37;
+  --gold-light: #f6e27a;
+  --gold-dark: #b8860b;
 
-  /* Pink variations */
-  --pink: #E9A0B8;
-  --pink-light: #F8DCE5;
-  --pink-medium: #F3B6C7;
-
-  /* Cream */
-  --cream: #FFF9F5;
-
-  /* Campaign accents */
-  --campaign: #111111;
-  --campaign-soft: #f8f4f0;
-  --campaign-gold: #D4AF37;
+  /* Pink palette spectrum */
+  --pink-50: #fff1f2;
+  --pink-100: #ffe4e6;
+  --pink-200: #fecdd3;
+  --pink-300: #fda4af;
+  --pink-400: #fb7185;
+  --pink-500: #f43f5e;
+  --pink-600: #e11d48;
+  --pink-700: #be123c;
 
   /* Status */
-  --destructive: #dc2626;
+  --destructive: #ef4444;
   --destructive-foreground: #ffffff;
 }
 
@@ -72,21 +70,23 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-accent-foreground: var(--accent-foreground);
-  --color-campaign: var(--campaign);
-  --color-campaign-soft: var(--campaign-soft);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
-  /* Brand-specific named colors */
+  /* Brand specific colors */
   --color-gold: var(--gold);
   --color-gold-light: var(--gold-light);
   --color-gold-dark: var(--gold-dark);
-  --color-pink: var(--pink);
-  --color-pink-light: var(--pink-light);
-  --color-pink-medium: var(--pink-medium);
-  --color-cream: var(--cream);
+  --color-pink-50: var(--pink-50);
+  --color-pink-100: var(--pink-100);
+  --color-pink-200: var(--pink-200);
+  --color-pink-300: var(--pink-300);
+  --color-pink-400: var(--pink-400);
+  --color-pink-500: var(--pink-500);
+  --color-pink-600: var(--pink-600);
+  --color-pink-700: var(--pink-700);
 
-  /* Modern Poppins font as primary sans */
+  /* Primary Typography: Poppins everywhere for e-commerce */
   --font-sans: var(--font-poppins), system-ui, -apple-system, sans-serif;
   --font-serif: var(--font-playfair), Georgia, serif;
 }
@@ -96,6 +96,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -104,31 +105,38 @@ body {
   font-family: var(--font-poppins), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
   min-height: 100vh;
+  /* Prevent pull-to-refresh reload bounce on mobile app views */
+  overscroll-behavior-y: contain;
 }
 
-/* Selection highlighting — gold accent */
+/* Selection highlighting — dreamy pink */
 ::selection {
-  background-color: #f8dce5;
-  color: #1a1a1a;
+  background-color: #fecdd3;
+  color: #881337;
+}
+
+/* Mobile-app safe area bottom padding */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: #fff1f2;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d4c5b9;
+  background: #fda4af;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b8a99c;
+  background: #f43f5e;
 }
 
 /* Utility to hide scrollbars while preserving touch scroll */
@@ -141,7 +149,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════
-   Keyframe animations for micro-interactions
+   Mobile App Micro-Interactions & Animations
 ═══════════════════════════════════════════════════ */
 
 @keyframes heartPop {
@@ -153,7 +161,7 @@ body {
 
 @keyframes floatGentle {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-5px); }
 }
 
 @keyframes shimmerEffect {
@@ -161,36 +169,9 @@ body {
   100% { transform: translateX(100%); }
 }
 
-@keyframes slideUpFade {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes goldShimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.04); }
 }
 
 .animate-heart-pop {
@@ -198,19 +179,11 @@ body {
 }
 
 .animate-float {
-  animation: floatGentle 4s ease-in-out infinite;
+  animation: floatGentle 3s ease-in-out infinite;
 }
 
-.animate-slide-up {
-  animation: slideUpFade 0.5s ease-out forwards;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.6s ease-out forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.3s ease-out forwards;
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
 }
 
 /* Shimmer utility for smooth skeletons */
@@ -225,29 +198,37 @@ body {
   background-image: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0,
-    rgba(255, 255, 255, 0.5) 20%,
-    rgba(255, 255, 255, 0.5) 60%,
+    rgba(255, 255, 255, 0.6) 20%,
+    rgba(255, 255, 255, 0.6) 60%,
     rgba(255, 255, 255, 0)
   );
   animation: shimmerEffect 2s infinite;
   content: "";
 }
 
-/* Gold gradient text utility */
-.text-gold-gradient {
-  background: linear-gradient(135deg, #C9A227 0%, #E6C76A 50%, #D4AF37 100%);
+/* Pink gradient text utility */
+.text-pink-gradient {
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #fb7185 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Gold divider */
-.gold-divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+/* Gold gradient text utility */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #b8860b 0%, #d4af37 50%, #f6e27a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Respect user accessibility preference: Disable all animations for prefers-reduced-motion */
+/* Delicate pink divider */
+.pink-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #fda4af, transparent);
+}
+
+/* Respect accessibility reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

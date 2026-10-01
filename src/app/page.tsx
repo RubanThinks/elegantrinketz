@@ -24,7 +24,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col w-full">
-      {/* 1. Hero Section — Elegant Trinketz Fashion Hero */}
+      {/* 1. Hero Section — Vibrant Fashion Banner */}
       <Hero
         headline="Elegance in Every Dress"
         description="Discover styles designed to make every occasion feel special."
@@ -34,28 +34,28 @@ export default async function HomePage() {
         secondaryCtaHref="/categories"
       />
 
-      {/* 2. Shop by Category — Circular Stories */}
+      {/* 2. Shop by Category — App Story Circles */}
       <CategoryStory categories={categories} />
 
       {/* 3. New Arrivals Section */}
-      <section className="py-14 sm:py-20 bg-white">
+      <section className="py-10 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-2">
             <div>
-              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Just Landed</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1a1a1a] tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-serif italic font-bold text-neutral-900 tracking-tight">
                 New Arrivals
               </h2>
             </div>
             <Link
               href="/shop/collection/new-arrivals"
-              className="group inline-flex items-center text-xs font-semibold uppercase tracking-wider text-[#1a1a1a] hover:text-[#D4AF37] transition-colors"
+              className="group inline-flex items-center text-xs font-bold uppercase tracking-wider text-rose-600 hover:text-rose-700 transition-colors"
             >
-              <span>Explore All New</span>
-              <ArrowRight className="ml-1.5 w-4 h-4 transition-transform group-hover:translate-x-1" />
+              <span>Explore All</span>
+              <ArrowRight className="ml-1 w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
 
@@ -63,28 +63,28 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 4. Editorial / Campaign Section */}
+      {/* 4. Editorial Story Banner */}
       <EditorialBanner />
 
       {/* 5. Trending & Best Sellers — Product Carousel */}
-      <section className="py-14 sm:py-20 bg-[#fff9f5] border-y border-[#e8e0d8]">
+      <section className="py-10 sm:py-16 bg-rose-50/40 border-y border-rose-100/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-2">
             <div>
-              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-1">
-                <Flame className="w-3.5 h-3.5 fill-[#D4AF37] text-[#D4AF37]" />
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">
+                <Flame className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
                 <span>Popular Picks</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1a1a1a] tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-serif italic font-bold text-neutral-900 tracking-tight">
                 Trending at {siteConfig.name}
               </h2>
             </div>
             <Link
               href="/shop/collection/best-sellers"
-              className="group inline-flex items-center text-xs font-semibold uppercase tracking-wider text-[#1a1a1a] hover:text-[#D4AF37] transition-colors"
+              className="group inline-flex items-center text-xs font-bold uppercase tracking-wider text-rose-600 hover:text-rose-700 transition-colors"
             >
-              <span>View All Bestsellers</span>
-              <ArrowRight className="ml-1.5 w-4 h-4 transition-transform group-hover:translate-x-1" />
+              <span>View All</span>
+              <ArrowRight className="ml-1 w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
 
@@ -92,7 +92,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 6. WhatsApp Shopping CTA */}
+      {/* 6. WhatsApp Instant Shopping CTA */}
       <CampaignBanner />
 
       {/* 7. Why Elegant Trinketz */}

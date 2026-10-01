@@ -10,51 +10,54 @@ const features = [
   },
   {
     icon: Sparkles,
-    title: "Women's Fashion",
-    description: "From everyday kurtis to special occasion sets — fashion designed for the modern Indian woman.",
+    title: "Trendy Women's Fashion",
+    description: "From everyday kurtis to festive 3-piece sets — fashion designed for the modern Indian woman.",
   },
   {
     icon: Heart,
     title: "Everyday Elegance",
-    description: "Styles that seamlessly transition from casual outings to festive celebrations.",
+    description: "Styles that seamlessly transition from casual brunches to family celebrations.",
   },
   {
     icon: MessageCircle,
-    title: "Easy Ordering",
+    title: "Instant WhatsApp Orders",
     description: "Browse, choose, and order via WhatsApp — simple, personal, and hassle-free.",
   },
 ];
 
 export function InstagramSection() {
   return (
-    <section className="py-16 sm:py-22 bg-white border-t border-[#e8e0d8]">
+    <section className="py-12 sm:py-18 bg-white border-t border-rose-100/70">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-lg mx-auto mb-12 space-y-3">
-          <div className="w-10 h-px bg-[#D4AF37] mx-auto" />
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1a1a1a] tracking-tight">
-            Why {siteConfig.name}
+        <div className="text-center max-w-lg mx-auto mb-10 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 text-xs font-bold">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>The Elegant Promise</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-serif italic font-bold text-neutral-900 tracking-tight">
+            Why Shop at {siteConfig.name}
           </h2>
-          <p className="text-xs sm:text-sm text-[#888] font-light">
-            What makes us your go-to destination for women&apos;s fashion.
+          <p className="text-xs sm:text-sm text-neutral-500 font-light">
+            Your destination for contemporary fashion, curated designs, and easy shopping.
           </p>
         </div>
 
         {/* 4-Feature Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-8">
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
               <div
                 key={feature.title}
-                className="text-center space-y-3"
+                className="text-center space-y-2.5 p-4 rounded-2xl bg-rose-50/30 border border-rose-100/60 hover:bg-rose-50/60 transition-colors"
               >
-                <div className="w-12 h-12 mx-auto rounded-full bg-[#fff9f5] border border-[#e8e0d8] flex items-center justify-center">
-                  <Icon className="w-5 h-5 text-[#D4AF37]" />
+                <div className="w-11 h-11 mx-auto rounded-full bg-white border border-rose-200/80 shadow-xs flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-rose-500" />
                 </div>
-                <h3 className="text-sm font-semibold text-[#1a1a1a]">
+                <h3 className="text-xs sm:text-sm font-bold text-neutral-900">
                   {feature.title}
                 </h3>
-                <p className="text-xs text-[#888] leading-relaxed font-light">
+                <p className="text-[11px] sm:text-xs text-neutral-500 leading-relaxed font-light">
                   {feature.description}
                 </p>
               </div>
