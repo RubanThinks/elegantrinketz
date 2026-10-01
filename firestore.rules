@@ -1,0 +1,214 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // HELPER FUNCTIONS FOR ROLE-BASED ACCESS CONTROL (RBAC)
+    // -------------------------------------------------------------------------
+
+    // Check if the user is authenticated via Firebase Auth
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the request is originating from the specified user
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Get the user document from the 'users' collection
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Check if the requesting user has 'admin' or 'super_admin' role
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        (getUserData().role == 'admin' || getUserData().role == 'super_admin') &&
+        getUserData().isActive == true;
+    }
+
+    // Check if the requesting user has 'super_admin' role
+    function isSuperAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        getUserData().role == 'super_admin' &&
+        getUserData().isActive == true;
+    }
+
+    // -------------------------------------------------------------------------
+    // USERS COLLECTION
+    // -------------------------------------------------------------------------
+    match /users/{userId} {
+      // User can read their own profile, or an active admin can read any profile
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Upon registration: user creates their own profile.
+      // FORCED SECURITY: role MUST be 'customer', isActive MUST be true, uid must match auth.uid
+      allow create: if isOwner(userId) &&
+        request.resource.data.role == 'customer' &&
+        request.resource.data.isActive == true &&
+        request.resource.data.uid == userId;
+
+      // Customer can update their profile fields (name, phone, addresses, photoURL),
+      // but is STRICTLY PREVENTED from elevating their role or changing isActive status.
+      // Admins can update any user, but only super_admin can assign admin roles.
+      allow update: if (isOwner(userId) &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.isActive == resource.data.isActive &&
+        request.resource.data.uid == resource.data.uid) ||
+        (isAdmin() && (
+          // Standard admin cannot elevate anyone to super_admin or change another admin's role
+          request.resource.data.role == resource.data.role || isSuperAdmin()
+        ));
+
+      // User profiles cannot be deleted by customers; only super_admin can remove accounts
+      allow delete: if isSuperAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // PRODUCTS COLLECTION
+    // -------------------------------------------------------------------------
+    match /products/{productId} {
+      // Products are public catalog items readable by all visitors.
+      allow read: if true;
+
+      // Only administrators can create or update products
+      allow create, update: if isAdmin();
+
+      // Only super administrators can hard-delete products (destructive operation)
+      allow delete: if isSuperAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // IDENTIFIER REGISTRIES (Deterministic SKU & Slug uniqueness)
+    // -------------------------------------------------------------------------
+    match /skuRegistry/{sku} {
+      // Publicly readable for client-side pre-flight uniqueness checks
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /slugRegistry/{slug} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // PENDING MEDIA TRACKER (Cloudinary orphan prevention)
+    // -------------------------------------------------------------------------
+    match /pendingMedia/{mediaId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // CATEGORIES COLLECTION
+    // -------------------------------------------------------------------------
+    match /categories/{categoryId} {
+      // Categories are public taxonomy readable by all visitors.
+      allow read: if true;
+
+      // Only administrators can modify category taxonomy
+      allow create, update, delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // COLLECTIONS (Curated edits / drops)
+    // -------------------------------------------------------------------------
+    match /collections/{collectionId} {
+      // Collections are publicly readable.
+      allow read: if true;
+
+      // Only administrators can manage collections
+      allow create, update, delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // CART ITEMS COLLECTION
+    // -------------------------------------------------------------------------
+    match /cartItems/{cartItemId} {
+      // A customer can only read their own cart items
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+
+      // A customer can only add items with their own userId (no anonymous access)
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+
+      // A customer can only update items in their own cart
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+
+      // A customer can only delete items in their own cart
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // -------------------------------------------------------------------------
+    // WISHLIST COLLECTION
+    // -------------------------------------------------------------------------
+    match /wishlists/{wishlistId} {
+      // A customer can only read their own saved wishlist items
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+
+      // A customer can only add items to their own wishlist
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+
+      // A customer can delete from their own wishlist
+      allow delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+
+      // Wishlist items don't require in-place updates; they are added or deleted
+      allow update: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // ORDERS & ENQUIRIES COLLECTION (Admin-managed WhatsApp order workflow)
+    // -------------------------------------------------------------------------
+    match /orders/{orderId} {
+      // Authenticated customer can strictly only read their own orders.
+      // Anonymous users have NO access. Active administrators can read all orders.
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+
+      // STRICT SECURITY: Orders must be created only by authorized administrators.
+      // Customers and anonymous visitors CANNOT create order documents.
+      // Initial status must be 'pending' and inventoryDeducted must be false.
+      allow create: if isAdmin() &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.inventoryDeducted == false;
+
+      // Only authorized administrators can update orders (confirmation, cancellation).
+      // Customers cannot change status, set inventoryDeducted, or modify audit fields.
+      allow update: if isAdmin();
+
+      // Orders are never deleted by regular clients to maintain permanent audit trail.
+      allow delete: if isSuperAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // SITE SETTINGS
+    // -------------------------------------------------------------------------
+    match /siteSettings/{settingDoc} {
+      // Site settings (business name, contact info, currencies) are publicly readable
+      allow read: if true;
+
+      // Only administrators can update site configurations
+      allow write: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // ADMIN ACTIVITY LOG (Audit Trail)
+    // -------------------------------------------------------------------------
+    match /adminActivity/{activityId} {
+      // Only administrators can view audit logs
+      allow read: if isAdmin();
+
+      // Only authenticated admins can write log entries, and must record their own adminId
+      allow create: if isAdmin() &&
+        request.resource.data.adminId == request.auth.uid;
+
+      // Audit logs are strictly immutable: no updates or deletions allowed
+      allow update, delete: if false;
+    }
+  }
+}

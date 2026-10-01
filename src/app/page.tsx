@@ -1,69 +1,102 @@
-import Image from "next/image";
+import React from "react";
+import Link from "next/link";
+import { ArrowRight, Sparkles, Flame } from "lucide-react";
+import { Hero } from "@/components/layout/hero";
+import { CategoryStory } from "@/components/category/category-story";
+import { ProductGrid } from "@/components/product/product-grid";
+import { ProductCarousel } from "@/components/product/product-carousel";
+import { EditorialBanner } from "@/components/layout/editorial-banner";
+import { CampaignBanner } from "@/components/layout/campaign-banner";
+import { InstagramSection } from "@/components/layout/instagram-section";
+import { siteConfig } from "@/config/site";
+import { getCategories } from "@/services/categories";
+import { getProducts, toProductCardData } from "@/services/products";
 
-export default function Home() {
+export default async function HomePage() {
+  const [newArrivalsRes, bestSellersRes, categories] = await Promise.all([
+    getProducts({ isNew: true, limit: 4 }),
+    getProducts({ isBestSeller: true, limit: 8 }),
+    getCategories(),
+  ]);
+
+  const newArrivals = newArrivalsRes.products.map(toProductCardData);
+  const bestSellers = bestSellersRes.products.map(toProductCardData);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="flex flex-col w-full">
+      {/* 1. Hero Section — Elegant Trinketz Fashion Hero */}
+      <Hero
+        headline="Elegance in Every Dress"
+        description="Discover styles designed to make every occasion feel special."
+        ctaText="Shop Collection"
+        ctaHref="/shop"
+        secondaryCtaText="Explore Categories"
+        secondaryCtaHref="/categories"
+      />
+
+      {/* 2. Shop by Category — Circular Stories */}
+      <CategoryStory categories={categories} />
+
+      {/* 3. New Arrivals Section */}
+      <section className="py-14 sm:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-3">
+            <div>
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Just Landed</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1a1a1a] tracking-tight">
+                New Arrivals
+              </h2>
+            </div>
+            <Link
+              href="/shop/collection/new-arrivals"
+              className="group inline-flex items-center text-xs font-semibold uppercase tracking-wider text-[#1a1a1a] hover:text-[#D4AF37] transition-colors"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <span>Explore All New</span>
+              <ArrowRight className="ml-1.5 w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+
+          <ProductGrid products={newArrivals} />
+        </div>
+      </section>
+
+      {/* 4. Editorial / Campaign Section */}
+      <EditorialBanner />
+
+      {/* 5. Trending & Best Sellers — Product Carousel */}
+      <section className="py-14 sm:py-20 bg-[#fff9f5] border-y border-[#e8e0d8]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-3">
+            <div>
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-1">
+                <Flame className="w-3.5 h-3.5 fill-[#D4AF37] text-[#D4AF37]" />
+                <span>Popular Picks</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1a1a1a] tracking-tight">
+                Trending at {siteConfig.name}
+              </h2>
+            </div>
+            <Link
+              href="/shop/collection/best-sellers"
+              className="group inline-flex items-center text-xs font-semibold uppercase tracking-wider text-[#1a1a1a] hover:text-[#D4AF37] transition-colors"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <span>View All Bestsellers</span>
+              <ArrowRight className="ml-1.5 w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+
+          <ProductCarousel products={bestSellers} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
+
+      {/* 6. WhatsApp Shopping CTA */}
+      <CampaignBanner />
+
+      {/* 7. Why Elegant Trinketz */}
+      <InstagramSection />
     </div>
   );
 }
