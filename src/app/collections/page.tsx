@@ -74,7 +74,7 @@ export default function CollectionsPage() {
                 alt={col.title}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover opacity-75 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-85"
+                className="object-cover object-top opacity-75 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-85"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-neutral-950/30 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 text-white space-y-2">

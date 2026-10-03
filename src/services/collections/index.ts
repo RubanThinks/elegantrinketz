@@ -80,6 +80,30 @@ const fallbackCollections: Collection[] = [
 
 import { USE_DEMO_DATA } from "@/lib/config/demo";
 
+function normalizeCollectionDoc(id: string, data: any): Collection {
+  const createdAt =
+    data.createdAt?.toDate?.()?.toISOString() ||
+    (typeof data.createdAt === "string" ? data.createdAt : new Date().toISOString());
+  const updatedAt =
+    data.updatedAt?.toDate?.()?.toISOString() ||
+    (typeof data.updatedAt === "string" ? data.updatedAt : new Date().toISOString());
+
+  return {
+    id,
+    name: String(data.name || ""),
+    slug: String(data.slug || ""),
+    description: data.description ? String(data.description) : undefined,
+    image: data.image ? String(data.image) : undefined,
+    imagePublicId: data.imagePublicId ? String(data.imagePublicId) : undefined,
+    productIds: Array.isArray(data.productIds) ? data.productIds : [],
+    isActive: data.isActive !== false,
+    isFeatured: Boolean(data.isFeatured),
+    sortOrder: typeof data.sortOrder === "number" ? data.sortOrder : 0,
+    createdAt,
+    updatedAt,
+  };
+}
+
 export async function getCollections(): Promise<Collection[]> {
   try {
     const db = getFirebaseDb();
@@ -90,10 +114,9 @@ export async function getCollections(): Promise<Collection[]> {
     const snap = await getDocs(q);
 
     if (!snap.empty) {
-      const items = snap.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-      })) as Collection[];
+      const items = snap.docs.map((docSnap) =>
+        normalizeCollectionDoc(docSnap.id, docSnap.data())
+      );
       return items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
     }
   } catch (error: any) {
@@ -115,10 +138,9 @@ export async function getAllCollectionsAdmin(): Promise<Collection[]> {
     const snap = await getDocs(q);
 
     if (!snap.empty) {
-      return snap.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-      })) as Collection[];
+      return snap.docs.map((docSnap) =>
+        normalizeCollectionDoc(docSnap.id, docSnap.data())
+      );
     }
   } catch (error) {
     console.error("[getAllCollectionsAdmin] Error:", error);
@@ -141,10 +163,7 @@ export async function getCollectionBySlug(slug: string): Promise<Collection | nu
     const snap = await getDocs(q);
 
     if (!snap.empty && snap.docs[0]) {
-      return {
-        id: snap.docs[0].id,
-        ...snap.docs[0].data(),
-      } as Collection;
+      return normalizeCollectionDoc(snap.docs[0].id, snap.docs[0].data());
     }
   } catch (error) {
     console.error("[CollectionsService] getCollectionBySlug Firestore query error:", error);

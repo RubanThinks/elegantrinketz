@@ -4,10 +4,11 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Search, Heart, ShoppingBag, User, Menu } from "lucide-react";
+import { Search, Heart, ShoppingCart, User, Menu } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { mainNavigation } from "@/config/navigation";
 import { MobileDrawer } from "@/components/navigation/mobile-drawer";
+import { HeaderSearch } from "@/components/search/header-search";
 import { useAuth } from "@/providers/auth-provider";
 import { useWishlist } from "@/providers/wishlist-provider";
 import { useCart } from "@/providers/cart-provider";
@@ -162,14 +163,10 @@ export function Header() {
                 <span>Chat</span>
               </a>
 
-              {/* Desktop Search Icon */}
-              <Link
-                href="/search"
-                aria-label="Search products"
-                className="hidden lg:inline-flex p-2 text-neutral-700 hover:text-rose-600 transition-colors focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-full"
-              >
-                <Search className="w-5 h-5 stroke-[1.8]" />
-              </Link>
+              {/* Desktop Header Search Bar (Amazon & Flipkart style) */}
+              <div className="hidden lg:block w-56 xl:w-72">
+                <HeaderSearch placeholder="Search kurtis, gowns, frocks..." />
+              </div>
 
               {/* Account (desktop) */}
               <Link
@@ -206,34 +203,26 @@ export function Header() {
                 <span className="sr-only">Wishlist ({wishlistCount})</span>
               </Link>
 
-              {/* Shopping Bag / Cart */}
+              {/* Shopping Cart — using distinct ShoppingCart icon */}
               <Link
                 href="/cart"
-                aria-label={`Shopping Bag (${itemCount} items)`}
+                aria-label={`Shopping Cart (${itemCount} items)`}
                 className="p-2 text-neutral-700 hover:text-rose-600 transition-colors relative focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-full active:scale-90"
               >
-                <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
+                <ShoppingCart className="w-5 h-5 stroke-[1.8]" />
                 {itemCount > 0 && (
                   <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs animate-scale-in">
                     {itemCount > 99 ? "99+" : itemCount}
                   </span>
                 )}
-                <span className="sr-only">Shopping Bag ({itemCount})</span>
+                <span className="sr-only">Shopping Cart ({itemCount})</span>
               </Link>
             </div>
           </div>
 
-          {/* Native Mobile App Search Pill (Visible only on mobile) */}
+          {/* Mobile Live Search Bar (Amazon & Flipkart style with real-time auto-suggestions) */}
           <div className="mt-2.5 lg:hidden">
-            <Link
-              href="/search"
-              className="w-full h-9 px-3.5 rounded-full bg-rose-50/70 hover:bg-rose-100/60 border border-rose-200/70 flex items-center gap-2.5 text-xs text-neutral-500 shadow-2xs transition-colors"
-            >
-              <Search className="w-4 h-4 text-rose-500 shrink-0" />
-              <span className="font-light tracking-wide truncate">
-                Search kurtis, frocks, gowns, trinketz...
-              </span>
-            </Link>
+            <HeaderSearch isMobile placeholder="Search kurtis, frocks, gowns, trinketz..." />
           </div>
         </div>
       </header>

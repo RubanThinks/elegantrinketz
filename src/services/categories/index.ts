@@ -30,6 +30,30 @@ function slugify(text: string): string {
     .replace(/--+/g, "-");
 }
 
+function normalizeCategoryDoc(id: string, data: any): Category {
+  const createdAt =
+    data.createdAt?.toDate?.()?.toISOString() ||
+    (typeof data.createdAt === "string" ? data.createdAt : new Date().toISOString());
+  const updatedAt =
+    data.updatedAt?.toDate?.()?.toISOString() ||
+    (typeof data.updatedAt === "string" ? data.updatedAt : new Date().toISOString());
+
+  return {
+    id,
+    name: String(data.name || ""),
+    slug: String(data.slug || ""),
+    description: data.description ? String(data.description) : undefined,
+    image: data.image ? String(data.image) : undefined,
+    imagePublicId: data.imagePublicId ? String(data.imagePublicId) : undefined,
+    productCount: typeof data.productCount === "number" ? data.productCount : undefined,
+    order: typeof data.order === "number" ? data.order : undefined,
+    sortOrder: typeof data.sortOrder === "number" ? data.sortOrder : 0,
+    isActive: data.isActive !== false,
+    createdAt,
+    updatedAt,
+  };
+}
+
 /**
  * Fetch active categories from Firestore.
  * In production, returns only real Firestore documents (or empty array).
@@ -45,10 +69,9 @@ export async function getCategories(): Promise<Category[]> {
     const snap = await getDocs(q);
 
     if (!snap.empty) {
-      const items = snap.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-      })) as Category[];
+      const items = snap.docs.map((docSnap) =>
+        normalizeCategoryDoc(docSnap.id, docSnap.data())
+      );
       return items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
     }
   } catch (error: any) {
@@ -73,10 +96,9 @@ export async function getAllCategoriesAdmin(): Promise<Category[]> {
     const snap = await getDocs(q);
 
     if (!snap.empty) {
-      return snap.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-      })) as Category[];
+      return snap.docs.map((docSnap) =>
+        normalizeCategoryDoc(docSnap.id, docSnap.data())
+      );
     }
   } catch (error) {
     console.error("[getAllCategoriesAdmin] Error:", error);
@@ -102,10 +124,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
     const snap = await getDocs(q);
 
     if (!snap.empty && snap.docs[0]) {
-      return {
-        id: snap.docs[0].id,
-        ...snap.docs[0].data(),
-      } as Category;
+      return normalizeCategoryDoc(snap.docs[0].id, snap.docs[0].data());
     }
   } catch (error) {
     console.error("[CategoriesService] getCategoryBySlug error:", error);

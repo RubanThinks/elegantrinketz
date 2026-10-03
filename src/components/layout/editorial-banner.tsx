@@ -19,7 +19,7 @@ export function EditorialBanner() {
                   alt="Elegant women's fashion styling"
                   fill
                   sizes="(max-width: 1024px) 50vw, 30vw"
-                  className="object-cover hover:scale-105 transition-transform duration-700"
+                  className="object-cover object-top hover:scale-105 transition-transform duration-700"
                 />
               </div>
 
@@ -30,7 +30,7 @@ export function EditorialBanner() {
                   alt="Detailed fashion styling and embroidery"
                   fill
                   sizes="(max-width: 1024px) 50vw, 30vw"
-                  className="object-cover hover:scale-105 transition-transform duration-700"
+                  className="object-cover object-top hover:scale-105 transition-transform duration-700"
                 />
               </div>
 

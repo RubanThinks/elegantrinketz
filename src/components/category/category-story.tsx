@@ -52,8 +52,8 @@ export function CategoryStory({ categories, className }: CategoryStoryProps) {
                         src={category.image}
                         alt={category.name}
                         fill
-                        sizes="(max-width: 640px) 72px, 88px"
-                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                        sizes="(max-width: 640px) 76px, 92px"
+                        className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-sm font-bold text-rose-400">

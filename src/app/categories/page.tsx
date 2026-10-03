@@ -46,7 +46,7 @@ export default async function CategoriesPage() {
                     alt={category.name}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
                   />
                 )}
                 {/* Subtle gradient vignette for text legibility */}
