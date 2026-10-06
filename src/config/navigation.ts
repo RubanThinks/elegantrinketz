@@ -14,6 +14,7 @@ import {
   Users,
   ClipboardList,
   Settings,
+  Sparkles,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -131,6 +132,7 @@ export const footerNavigation: FooterSection[] = [
 
 export const adminNavigation: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Storefront", href: "/admin/storefront", icon: Sparkles },
   { label: "Products", href: "/admin/products", icon: Package },
   { label: "Inventory", href: "/admin/inventory", icon: Boxes },
   { label: "Categories", href: "/admin/categories", icon: FolderOpen },

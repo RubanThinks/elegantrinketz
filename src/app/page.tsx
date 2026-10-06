@@ -10,35 +10,55 @@ import { BudgetStore } from "@/components/home/budget-store";
 import { ProductGrid } from "@/components/product/product-grid";
 import { ProductCarousel } from "@/components/product/product-carousel";
 import { CampaignBanner } from "@/components/layout/campaign-banner";
-import { siteConfig } from "@/config/site";
 import { getCategories } from "@/services/categories";
 import { getProducts, toProductCardData } from "@/services/products";
+import { getHeroSlides, getDealOfTheDaySettings } from "@/services/storefront";
 
 export default async function HomePage() {
-  const [newArrivalsRes, bestSellersRes, allProductsRes, categories] = await Promise.all([
+  const [
+    newArrivalsRes,
+    bestSellersRes,
+    allProductsRes,
+    categories,
+    heroSlides,
+    dealSettings,
+  ] = await Promise.all([
     getProducts({ isNew: true, limit: 4 }),
     getProducts({ isBestSeller: true, limit: 8 }),
-    getProducts({ limit: 8 }),
+    getProducts({ limit: 12 }),
     getCategories(),
+    getHeroSlides(),
+    getDealOfTheDaySettings(),
   ]);
 
   const newArrivals = newArrivalsRes.products.map(toProductCardData);
   const bestSellers = bestSellersRes.products.map(toProductCardData);
-  const dealProducts = (bestSellers.length > 0 ? bestSellers : allProductsRes.products.map(toProductCardData)).slice(0, 4);
+  const allCardProducts = allProductsRes.products.map(toProductCardData);
+
+  // If dealSettings specifies custom productIds, prioritize those products
+  let dealProducts = allCardProducts;
+  if (dealSettings.productIds && dealSettings.productIds.length > 0) {
+    const selected = allCardProducts.filter((p) =>
+      dealSettings.productIds.includes(p.id)
+    );
+    if (selected.length > 0) {
+      dealProducts = selected;
+    }
+  }
 
   return (
     <div className="flex flex-col w-full bg-white">
       {/* 1. Quick Category Story Strip */}
       <CategoryStory categories={categories} />
 
-      {/* 2. High-Converting Promotional Hero Banner Carousel */}
-      <Hero />
+      {/* 2. High-Converting Promotional Hero Banner Carousel (Admin Customizable) */}
+      <Hero initialSlides={heroSlides} />
 
-      {/* 3. Solid E-Commerce Service Guarantees Strip */}
+      {/* 3. Solid E-Commerce Service Guarantees Strip (Mobile text cut-off resolved) */}
       <ServiceAssuranceBar />
 
-      {/* 4. ⚡ Flash Deals / Deal of the Day with Countdown */}
-      <FlashDeals products={dealProducts} />
+      {/* 4. ⚡ Flash Deals / Deal of the Day with Real Countdown (Admin Customizable) */}
+      <FlashDeals products={dealProducts} initialSettings={dealSettings} />
 
       {/* 5. Shop by Category Visual Department Tiles */}
       <CategoryGrid />
@@ -65,7 +85,9 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <ProductCarousel products={bestSellers.length > 0 ? bestSellers : dealProducts} />
+          <ProductCarousel
+            products={bestSellers.length > 0 ? bestSellers : allCardProducts.slice(0, 8)}
+          />
         </div>
       </section>
 
@@ -94,7 +116,9 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <ProductGrid products={newArrivals.length > 0 ? newArrivals : dealProducts} />
+          <ProductGrid
+            products={newArrivals.length > 0 ? newArrivals : allCardProducts.slice(0, 4)}
+          />
         </div>
       </section>
 

@@ -347,3 +347,42 @@ export interface CreateReviewInput {
   title: string;
   comment: string;
 }
+
+/* ------------------------------------------------------------------ */
+/*  STOREFRONT CUSTOMIZATION TYPES (Admin-Controlled Merchandising)   */
+/* ------------------------------------------------------------------ */
+
+export interface AnnouncementSettings {
+  enabled: boolean;
+  badgeText: string;
+  message: string;
+  linkText: string;
+  linkHref: string;
+  updatedAt?: string;
+}
+
+export interface HeroSlide {
+  id: string;
+  badge: string;
+  badgeColor: string;
+  title: string;
+  highlight: string;
+  subtitle: string;
+  ctaText: string;
+  ctaHref: string;
+  secondaryCtaText: string;
+  secondaryCtaHref: string;
+  imageUrl: string;
+  isActive: boolean;
+  order: number;
+}
+
+export interface DealOfTheDaySettings {
+  enabled: boolean;
+  headline: string;
+  subheadline: string;
+  badgeText: string;
+  productIds: string[];
+  expiresAt: string; // ISO date/time string
+  updatedAt?: string;
+}
