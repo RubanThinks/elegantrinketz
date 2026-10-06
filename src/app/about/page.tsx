@@ -52,13 +52,13 @@ export default function AboutPage() {
         <div className="space-y-6 text-sm sm:text-base leading-relaxed font-light text-[#555]">
           <p>
             At {siteConfig.name}, true to our motto &ldquo;{siteConfig.tagline}&rdquo;, we believe
-            fashion should inspire confidence and charm. Our collections span Kids Wear, Women&apos;s
-            Wear, Western Wear, Ethnic Wear, Gowns &amp; Frocks, Festive &amp; Party Wear, along with
-            hand-picked Accessories (Trinketz) — designed to elevate every wardrobe.
+            fashion should inspire confidence and charm. Our signature collections feature Side Cut
+            Kurtis, Umbrella Kurtis, 3 Piece Sets, Straight Pants, and Shimmer Leggings, alongside
+            hand-picked Accessories (Trinketz) — designed to elevate every wardrobe with modern grace.
           </p>
           <p>
-            From everyday wear to celebratory occasions, each design is chosen for quality, comfort,
-            and timeless style. Visit our boutique in Anna Nagar, Chennai or order seamlessly through WhatsApp.
+            From everyday wear to festive celebrations, each design is chosen for quality, comfort,
+            and timeless style. Visit our boutique in Jagir Ammapalayam, Salem or order seamlessly through WhatsApp.
           </p>
         </div>
 

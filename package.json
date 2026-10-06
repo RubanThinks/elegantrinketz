@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node scripts/test-security.mjs && node scripts/test-cloudinary-security.mjs && npx tsx scripts/test-inventory-and-uniqueness.mjs"
+    "test": "node scripts/test-security.mjs && node scripts/test-cloudinary-security.mjs && npx tsx scripts/test-inventory-and-uniqueness.mjs && npx tsx scripts/test-order-tracking-and-sizing.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

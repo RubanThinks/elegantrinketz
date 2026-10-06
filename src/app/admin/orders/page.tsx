@@ -15,14 +15,16 @@ import {
   Trash2,
   AlertTriangle,
   ShoppingBag,
+  Truck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getAdminOrders, createAdminOrder, type CreateAdminOrderItemInput } from "@/services/orders";
 import { getAdminProducts } from "@/services/products";
+import { getRegisteredCustomers } from "@/services/users";
 import { formatPrice } from "@/config/constants";
 import { useAuth } from "@/providers/auth-provider";
-import type { Order, OrderStatus, Product } from "@/types";
+import type { Order, OrderStatus, Product, UserProfile } from "@/types";
 
 export default function AdminOrdersPage() {
   const { user } = useAuth();
@@ -38,8 +40,10 @@ export default function AdminOrdersPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [productsCatalog, setProductsCatalog] = useState<Product[]>([]);
   const [isCatalogLoading, setIsCatalogLoading] = useState(false);
+  const [registeredCustomers, setRegisteredCustomers] = useState<UserProfile[]>([]);
 
   // Form Fields for Manual Order Creation
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [custName, setCustName] = useState("");
   const [custPhone, setCustPhone] = useState("");
   const [custEmail, setCustEmail] = useState("");
@@ -109,16 +113,30 @@ export default function AdminOrdersPage() {
     setIsCreateModalOpen(true);
     setCreateError(null);
     setCreateSuccess(null);
-    if (productsCatalog.length === 0) {
-      setIsCatalogLoading(true);
-      try {
-        const res = await getAdminProducts({ pageSize: 100 });
-        setProductsCatalog(res.products);
-      } catch (err) {
-        console.error("Failed to load catalog for order creation:", err);
-      } finally {
-        setIsCatalogLoading(false);
-      }
+    setSelectedUserId("");
+    setIsCatalogLoading(true);
+    try {
+      const [prodRes, userRes] = await Promise.all([
+        productsCatalog.length === 0 ? getAdminProducts({ pageSize: 100 }) : Promise.resolve(null),
+        registeredCustomers.length === 0 ? getRegisteredCustomers(100) : Promise.resolve(null),
+      ]);
+      if (prodRes) setProductsCatalog(prodRes.products);
+      if (userRes) setRegisteredCustomers(userRes);
+    } catch (err) {
+      console.error("Failed to load catalog or customers for order creation:", err);
+    } finally {
+      setIsCatalogLoading(false);
+    }
+  };
+
+  const handleCustomerSelect = (uid: string) => {
+    setSelectedUserId(uid);
+    if (!uid) return;
+    const match = registeredCustomers.find((c) => c.uid === uid);
+    if (match) {
+      if (match.displayName) setCustName(match.displayName);
+      if (match.phone) setCustPhone(match.phone);
+      if (match.email) setCustEmail(match.email);
     }
   };
 
@@ -212,6 +230,7 @@ export default function AdminOrdersPage() {
         customerName: custName,
         customerPhone: custPhone,
         customerEmail: custEmail || null,
+        userId: selectedUserId || null,
         items: itemsPayload,
         notes: orderNotes,
         adminUid: user.uid,
@@ -261,6 +280,27 @@ export default function AdminOrdersPage() {
           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
             Confirmed & Deducted
+          </span>
+        );
+      case "processing":
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-800 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+            <RefreshCw className="w-3 h-3 text-indigo-600" />
+            Processing
+          </span>
+        );
+      case "shipped":
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-800 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full">
+            <Truck className="w-3 h-3 text-sky-600" />
+            Shipped
+          </span>
+        );
+      case "delivered":
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
+            <CheckCircle2 className="w-3 h-3 text-teal-600" />
+            Delivered
           </span>
         );
       case "cancelled":
@@ -392,6 +432,9 @@ export default function AdminOrdersPage() {
               { id: "all", label: "All" },
               { id: "pending", label: "Pending" },
               { id: "confirmed", label: "Confirmed" },
+              { id: "processing", label: "Processing" },
+              { id: "shipped", label: "Shipped" },
+              { id: "delivered", label: "Delivered" },
               { id: "cancelled", label: "Cancelled" },
             ].map((tab) => (
               <button
@@ -587,6 +630,30 @@ export default function AdminOrdersPage() {
             )}
 
             <form onSubmit={handleCreateOrderSubmit} className="space-y-4 text-xs">
+              {/* Account Allocation Option */}
+              {registeredCustomers.length > 0 && (
+                <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-200 space-y-1">
+                  <label className="block font-semibold text-neutral-800">
+                    Allocate to Registered Customer Account (Optional)
+                  </label>
+                  <select
+                    value={selectedUserId}
+                    onChange={(e) => handleCustomerSelect(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-neutral-900 bg-white focus:outline-none focus:border-rose-600 text-xs"
+                  >
+                    <option value="">-- Guest Order (Unallocated) --</option>
+                    {registeredCustomers.map((c) => (
+                      <option key={c.uid} value={c.uid}>
+                        {c.displayName || "Customer"} ({c.email || c.phone || c.uid.slice(0, 8)})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-neutral-500">
+                    Selecting a registered customer automatically allocates the order to their account so they can track it live.
+                  </p>
+                </div>
+              )}
+
               {/* Customer Info */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>

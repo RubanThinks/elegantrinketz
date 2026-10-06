@@ -388,9 +388,13 @@ export function CartView() {
                         </span>
                         <button
                           type="button"
-                          onClick={() =>
-                            item.id && updateQuantity(item.id, item.quantity + 1)
-                          }
+                          onClick={() => {
+                            if (!item.id) return;
+                            const sizeObj = item.product?.sizes?.find(
+                              (s) => s.id === item.sizeId || s.name === item.sizeName
+                            );
+                            updateQuantity(item.id, item.quantity + 1, sizeObj?.stock);
+                          }}
                           aria-label={`Increase quantity for ${item.productName || "item"}${item.sizeName ? `, size ${item.sizeName}` : ""}`}
                           className="w-8 h-8 flex items-center justify-center text-neutral-600 hover:text-neutral-900 transition-colors"
                         >

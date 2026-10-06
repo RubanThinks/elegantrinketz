@@ -35,15 +35,15 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Mobile Navigation"
-      className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 backdrop-blur-md border-t border-rose-100 shadow-[0_-4px_20px_rgba(225,29,72,0.06)] pb-safe transition-all select-none"
+      className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-neutral-200 shadow-sm pb-safe transition-all select-none"
     >
-      <div className="max-w-md mx-auto px-2 h-16 flex items-center justify-between">
+      <div className="max-w-md mx-auto px-2 h-15 flex items-center justify-between">
         {/* 1. Home */}
         <Link
           href="/"
           className={cn(
             "flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-90",
-            isHomeActive ? "text-rose-600 font-semibold" : "text-neutral-500 hover:text-neutral-900"
+            isHomeActive ? "text-neutral-950 font-bold" : "text-neutral-500 hover:text-neutral-900"
           )}
         >
           <div className="flex flex-col items-center justify-center">
@@ -55,16 +55,15 @@ export function BottomNav() {
                 )}
               />
             </div>
-            {/* Instagram-style separated dot indicator with breathing space */}
-            <div className="h-1.5 flex items-center justify-center mt-1.5">
+            <div className="h-1 flex items-center justify-center mt-1">
               {isHomeActive ? (
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.55)] animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-neutral-950" />
               ) : (
                 <span className="w-1.5 h-1.5 opacity-0" />
               )}
             </div>
           </div>
-          <span className="text-[10px] tracking-tight -mt-0.5">Home</span>
+          <span className="text-[10px] tracking-tight -mt-0.5 font-flipkart">Home</span>
         </Link>
 
         {/* 2. Categories */}
@@ -72,7 +71,7 @@ export function BottomNav() {
           href="/categories"
           className={cn(
             "flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-90",
-            isCategoriesActive ? "text-rose-600 font-semibold" : "text-neutral-500 hover:text-neutral-900"
+            isCategoriesActive ? "text-neutral-950 font-bold" : "text-neutral-500 hover:text-neutral-900"
           )}
         >
           <div className="flex flex-col items-center justify-center">
@@ -84,38 +83,35 @@ export function BottomNav() {
                 )}
               />
             </div>
-            {/* Instagram-style separated dot indicator with breathing space */}
-            <div className="h-1.5 flex items-center justify-center mt-1.5">
+            <div className="h-1 flex items-center justify-center mt-1">
               {isCategoriesActive ? (
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.55)] animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-neutral-950" />
               ) : (
                 <span className="w-1.5 h-1.5 opacity-0" />
               )}
             </div>
           </div>
-          <span className="text-[10px] tracking-tight -mt-0.5">Categories</span>
+          <span className="text-[10px] tracking-tight -mt-0.5 font-flipkart">Categories</span>
         </Link>
 
-        {/* 3. Center Elevated "Shop" Button — using unique Store icon */}
+        {/* 3. Center Elevated "Shop" Button */}
         <Link
           href="/shop"
-          className="flex flex-col items-center justify-center flex-1 -mt-5 group active:scale-95 transition-transform"
+          className="flex flex-col items-center justify-center flex-1 -mt-4 group active:scale-95 transition-transform"
           aria-label="Shop Catalog"
         >
           <div
             className={cn(
-              "w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-rose-500 via-pink-500 to-rose-600 shadow-[0_4px_14px_rgba(225,29,72,0.4)] group-hover:shadow-[0_6px_20px_rgba(225,29,72,0.55)] transition-all flex items-center justify-center",
-              isShopActive && "ring-2 ring-rose-500 ring-offset-2 ring-offset-white"
+              "w-11 h-11 rounded-full bg-neutral-950 text-white shadow-sm flex items-center justify-center border-2 border-white",
+              isShopActive && "ring-2 ring-neutral-950"
             )}
           >
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white">
-              <Store className="w-5 h-5 text-white stroke-[2]" />
-            </div>
+            <Store className="w-5 h-5 text-white stroke-[2]" />
           </div>
           <span
             className={cn(
-              "text-[10px] font-bold tracking-tight mt-1 transition-colors",
-              isShopActive ? "text-rose-600" : "text-neutral-800"
+              "text-[10px] font-bold tracking-tight mt-0.5 transition-colors font-flipkart",
+              isShopActive ? "text-neutral-950" : "text-neutral-700"
             )}
           >
             Shop

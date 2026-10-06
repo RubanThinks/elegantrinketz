@@ -9,7 +9,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
   title: "Categories",
   description:
-    "Browse by category — Sarees, Dresses, Kurtis, Lehengas, Tops, and Ethnic Wear.",
+    "Browse by category — Side Cut Kurtis, Umbrella Kurtis, 3 Piece Sets, Straight Pants, Shimmer Leggings, and Accessories.",
   path: "/categories",
 });
 

@@ -10,7 +10,7 @@ export const siteConfig = {
   name: "Elegant Trinketz",
   tagline: "Elegance in Every Dress",
   description:
-    "Discover contemporary women's fashion — kurtis, 3-piece sets, straight pants, shimmer leggings and more. Elegant styles designed for every occasion.",
+    "Discover contemporary women's fashion — side cut kurtis, umbrella kurtis, 3-piece sets, straight pants, shimmer leggings and accessories. Elegant styles designed for every occasion.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://eleganttrinketz.com",
 
   /** Locale & currency */
@@ -23,18 +23,20 @@ export const siteConfig = {
   logo: "/logo.png",
   logoDark: "/logo-dark.png",
   favicon: "/logo.png",
+  previewImage: "/logo.png",
+  ogImage: "/logo.png",
 
   /** Contact */
   email: "",
-  phone: "+91 93452 46835",
-  phoneNumbers: ["+91 93452 46835", "+91 98404 18605"],
-  whatsappNumber: "919840418605",
-  whatsappNumberFormatted: "+91 98404 18605",
+  phone: "+91 78452 03893",
+  phoneNumbers: ["+91 78452 03893", "+91 88382 71225"],
+  whatsappNumber: "917845203893",
+  whatsappNumberFormatted: "+91 78452 03893",
   address: {
-    street: "No 27/5, C1, 1st floor, Anna Nagar 2nd Avenue",
-    area: "Block C, C Block, Anna Nagar",
-    city: "Chennai",
-    pincode: "600040",
+    street: "3/76 A, Jeeva Street",
+    area: "Jagir Ammapalayam",
+    city: "Salem",
+    pincode: "636302",
     state: "Tamil Nadu",
     country: "India",
   },
@@ -47,12 +49,12 @@ export const siteConfig = {
 
   /** Product categories the business currently offers */
   categories: [
-    "Kids Wear",
-    "Women's Wear",
-    "Western Wear",
-    "Ethnic Wear",
-    "Gowns / Frocks",
-    "Festive & Party Wear",
+    "Side Cut Kurtis",
+    "Umbrella Kurtis",
+    "3 Piece Sets",
+    "Straight Pants",
+    "Shimmer Leggings",
+    "Ethnic & Festive Wear",
     "Accessories (Trinketz)",
   ] as const,
 
@@ -60,7 +62,7 @@ export const siteConfig = {
   social: {
     instagram: "",
     facebook: "",
-    whatsapp: "https://wa.me/919840418605",
+    whatsapp: "https://wa.me/917845203893",
   },
 
   /** SEO defaults */
@@ -80,7 +82,7 @@ export const siteConfig = {
   /** Announcement bar */
   announcement: {
     enabled: true,
-    message: "New styles now available — Order via WhatsApp for easy shopping",
+    message: "New side cut kurtis & 3-piece sets now available — Order via WhatsApp for instant delivery",
     link: "/shop",
     linkText: "Shop Now",
   },

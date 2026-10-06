@@ -11,14 +11,14 @@ import { EmptyState } from "@/components/common/empty-state";
 import Link from "next/link";
 
 const POPULAR_SEARCH_TAGS = [
+  "Side Cut Kurtis",
+  "Umbrella Kurtis",
+  "3 Piece Sets",
+  "Straight Pants",
+  "Shimmer Leggings",
   "Kurtis",
-  "Gowns",
-  "Frocks",
   "Festive Wear",
-  "Silk Sarees",
-  "Anarkali",
   "Trinketz",
-  "Western Wear",
 ];
 
 function SearchContent() {

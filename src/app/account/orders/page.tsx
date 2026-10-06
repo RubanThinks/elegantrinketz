@@ -12,6 +12,8 @@ import {
   ShoppingBag,
   ExternalLink,
   MessageCircle,
+  Truck,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthGuard } from "@/components/guards/auth-guard";
@@ -65,6 +67,27 @@ function OrdersContent() {
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             Order Confirmed
+          </span>
+        );
+      case "processing":
+        return (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-800 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">
+            <RefreshCw className="w-3.5 h-3.5 text-indigo-600 animate-spin" />
+            Processing in Atelier
+          </span>
+        );
+      case "shipped":
+        return (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-sky-800 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full">
+            <Truck className="w-3.5 h-3.5 text-sky-600" />
+            Shipped &amp; In Transit
+          </span>
+        );
+      case "delivered":
+        return (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">
+            <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
+            Delivered
           </span>
         );
       case "cancelled":
@@ -161,6 +184,21 @@ function OrdersContent() {
                           year: "numeric",
                         })}
                       </p>
+                      {(order.carrier || order.trackingNumber) && (
+                        <div className="pt-1 flex items-center gap-2 text-xs text-sky-800 font-medium">
+                          <Truck className="w-3.5 h-3.5 text-sky-600" />
+                          <span>
+                            {order.carrier ? `${order.carrier}` : "Courier"}
+                            {order.trackingNumber ? ` • ${order.trackingNumber}` : ""}
+                          </span>
+                          <Link
+                            href={`/account/orders/${order.id}`}
+                            className="text-xs text-rose-600 hover:text-rose-700 underline font-semibold ml-1"
+                          >
+                            Live Tracking &rarr;
+                          </Link>
+                        </div>
+                      )}
                     </div>
 
                     <div className="text-left sm:text-right">

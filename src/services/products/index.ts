@@ -610,6 +610,15 @@ export async function createProduct(
   const { totalStock, isOutOfStock, inventoryStatus } = calculateProductInventory(cleanSizes);
   const status = productData.status || (productData.isPublished ? "published" : "draft");
 
+  if (status === "published") {
+    if (!productData.categoryId) {
+      throw new Error("Product cannot be published without an assigned category.");
+    }
+    if (cleanSizes.length === 0) {
+      throw new Error("Product cannot be published without at least one size variant.");
+    }
+  }
+
   // Media normalization
   const rawImages = productData.images || {};
   const rawMedia = productData.media || rawImages.mediaItems || [];

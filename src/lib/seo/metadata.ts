@@ -46,15 +46,20 @@ export function buildPageMetadata({
       siteName: siteConfig.seo.openGraph.siteName,
       type: siteConfig.seo.openGraph.type,
       locale: siteConfig.seo.openGraph.locale,
-      ...(image && {
-        images: [{ url: image, width: 1200, height: 630, alt: pageTitle }],
-      }),
+      images: [
+        {
+          url: image || siteConfig.logo,
+          width: 1200,
+          height: 630,
+          alt: pageTitle,
+        },
+      ],
     },
     twitter: {
       card: siteConfig.seo.twitter.cardType,
       title: pageTitle,
       description: pageDescription,
-      ...(image && { images: [image] }),
+      images: [image || siteConfig.logo],
     },
   };
 }

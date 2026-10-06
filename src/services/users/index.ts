@@ -1,6 +1,11 @@
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
+  query,
+  where,
+  limit,
   setDoc,
   updateDoc,
   serverTimestamp,
@@ -150,4 +155,70 @@ export async function updateUserProfile(
   }
 
   await updateDoc(userRef, cleanPayload);
+}
+
+/**
+ * Fetch registered customers for admin order allocation.
+ * Strict RBAC: only accessible by authenticated administrators.
+ */
+export async function getRegisteredCustomers(limitCount = 50): Promise<UserProfile[]> {
+  try {
+    const db = getFirebaseDb();
+    const q = query(collection(db, USERS_COLLECTION), limit(limitCount));
+    const snap = await getDocs(q);
+
+    return snap.docs.map((docSnap) => {
+      const data = docSnap.data();
+      return {
+        uid: docSnap.id,
+        email: data.email || "",
+        displayName: data.displayName || "",
+        phone: data.phone || "",
+        photoURL: data.photoURL || null,
+        role: (data.role as UserRole) || "customer",
+        isActive: data.isActive !== false,
+        addresses: data.addresses || [],
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
+        updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt || new Date().toISOString(),
+      };
+    });
+  } catch (error) {
+    console.error("[UsersService] Error fetching registered customers:", error);
+    return [];
+  }
+}
+
+/**
+ * Find customer profile by email.
+ */
+export async function findCustomerByEmail(email: string): Promise<UserProfile | null> {
+  if (!email || !email.trim()) return null;
+  try {
+    const db = getFirebaseDb();
+    const q = query(
+      collection(db, USERS_COLLECTION),
+      where("email", "==", email.trim().toLowerCase()),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    if (snap.empty || !snap.docs[0]) return null;
+
+    const docSnap = snap.docs[0];
+    const data = docSnap.data();
+    return {
+      uid: docSnap.id,
+      email: data.email || "",
+      displayName: data.displayName || "",
+      phone: data.phone || "",
+      photoURL: data.photoURL || null,
+      role: (data.role as UserRole) || "customer",
+      isActive: data.isActive !== false,
+      addresses: data.addresses || [],
+      createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
+      updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt || new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("[UsersService] Error searching customer by email:", error);
+    return null;
+  }
 }

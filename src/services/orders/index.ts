@@ -8,13 +8,20 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  updateDoc,
   serverTimestamp,
   runTransaction,
   type DocumentData,
 } from "firebase/firestore";
 import { getFirebaseDb } from "@/lib/firebase/client";
 import { logAdminActivity } from "@/services/activity";
-import type { Order, OrderItem, OrderStatus, ProductSize } from "@/types";
+import type {
+  Order,
+  OrderItem,
+  OrderStatus,
+  OrderTrackingHistoryItem,
+  ProductSize,
+} from "@/types";
 
 const ORDERS_COLLECTION = "orders";
 const PRODUCTS_COLLECTION = "products";
@@ -50,6 +57,26 @@ function mapDocToOrder(id: string, data: DocumentData): Order {
     cancelledAt: data.cancelledAt?.toDate?.()?.toISOString() || data.cancelledAt || null,
     cancelReason: data.cancelReason || null,
     inventoryDeducted: Boolean(data.inventoryDeducted),
+
+    // Tracking details
+    trackingNumber: data.trackingNumber || null,
+    carrier: data.carrier || null,
+    trackingUrl: data.trackingUrl || null,
+    estimatedDelivery: data.estimatedDelivery || null,
+    shippedAt: data.shippedAt?.toDate?.()?.toISOString() || data.shippedAt || null,
+    deliveredAt: data.deliveredAt?.toDate?.()?.toISOString() || data.deliveredAt || null,
+    trackingHistory: Array.isArray(data.trackingHistory)
+      ? data.trackingHistory.map((th: Record<string, unknown>) => ({
+          id: String(th.id || ""),
+          status: (th.status as OrderStatus) || "confirmed",
+          title: String(th.title || ""),
+          description: th.description ? String(th.description) : undefined,
+          location: th.location ? String(th.location) : undefined,
+          timestamp: String(th.timestamp || new Date().toISOString()),
+          updatedBy: th.updatedBy ? String(th.updatedBy) : undefined,
+        }))
+      : [],
+
     createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
     updatedAt: data.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
   };
@@ -556,6 +583,246 @@ export async function cancelOrder(
     return {
       success: false,
       message: (error as Error)?.message || "Failed to cancel order.",
+    };
+  }
+}
+
+/**
+ * Common carrier tracking link builder.
+ * Automatically generates carrier portal URLs if standard carrier is selected.
+ */
+export function getCarrierTrackingUrl(carrier: string, trackingNumber: string): string {
+  const cleanNumber = trackingNumber.trim();
+  const cLower = carrier.toLowerCase().trim();
+
+  if (!cleanNumber) return "";
+
+  if (cLower.includes("delhivery")) {
+    return `https://www.delhivery.com/track/package/${cleanNumber}`;
+  }
+  if (cLower.includes("blue dart") || cLower.includes("bluedart")) {
+    return `https://www.bluedart.com/tracking?handler=tnt&action=custtrack&trackid=${cleanNumber}`;
+  }
+  if (cLower.includes("dtdc")) {
+    return `https://www.dtdc.in/tracking/shipment-tracking.asp?strCnno=${cleanNumber}`;
+  }
+  if (cLower.includes("india post") || cLower.includes("speed post")) {
+    return `https://www.indiapost.gov.in/_layouts/15/dpt.cpt.tracking/trackconsignment.aspx`;
+  }
+  if (cLower.includes("fedex")) {
+    return `https://www.fedex.com/fedextrack/?trknbr=${cleanNumber}`;
+  }
+  if (cLower.includes("dhl")) {
+    return `https://www.dhl.com/in-en/home/tracking.html?tracking-id=${cleanNumber}`;
+  }
+  if (cLower.includes("ecom express")) {
+    return `https://ecomexpress.in/tracking/?awb_number=${cleanNumber}`;
+  }
+
+  return "";
+}
+
+export interface UpdateOrderTrackingInput {
+  orderId: string;
+  adminUid: string;
+  adminEmail?: string;
+  status?: OrderStatus;
+  trackingNumber?: string | null;
+  carrier?: string | null;
+  trackingUrl?: string | null;
+  estimatedDelivery?: string | null;
+  trackingNote?: string;
+  location?: string;
+}
+
+/**
+ * UPDATE ORDER TRACKING & STATUS
+ *
+ * Allows administrators to update order fulfillment status (processing, shipped, delivered),
+ * update tracking details (carrier, tracking number, URL, estimated delivery),
+ * and record milestone updates in trackingHistory.
+ * Changes are reflected in real-time on both admin and customer account views.
+ */
+export async function updateOrderTracking(
+  input: UpdateOrderTrackingInput
+): Promise<{ success: boolean; message: string }> {
+  const {
+    orderId,
+    adminUid,
+    adminEmail,
+    status,
+    trackingNumber,
+    carrier,
+    trackingUrl,
+    estimatedDelivery,
+    trackingNote,
+    location,
+  } = input;
+
+  if (!orderId) {
+    return { success: false, message: "Order ID is required." };
+  }
+
+  try {
+    const db = getFirebaseDb();
+    const orderRef = doc(db, ORDERS_COLLECTION, orderId);
+
+    const snap = await getDoc(orderRef);
+    if (!snap.exists()) {
+      return { success: false, message: "Order not found." };
+    }
+
+    const currentData = snap.data();
+    const targetStatus = status || (currentData.status as OrderStatus) || "pending";
+
+    // Auto-generate tracking URL if missing but carrier and number provided
+    let finalTrackingUrl = trackingUrl !== undefined ? trackingUrl : currentData.trackingUrl;
+    if (!finalTrackingUrl && carrier && trackingNumber) {
+      finalTrackingUrl = getCarrierTrackingUrl(carrier, trackingNumber);
+    }
+
+    // Build history milestone entry
+    const existingHistory: OrderTrackingHistoryItem[] = Array.isArray(currentData.trackingHistory)
+      ? currentData.trackingHistory
+      : [];
+
+    let statusTitle = "Order Updated";
+    switch (targetStatus) {
+      case "pending":
+        statusTitle = "Order Received & Pending";
+        break;
+      case "confirmed":
+        statusTitle = "Order Confirmed";
+        break;
+      case "processing":
+        statusTitle = "Processing & Handcrafting in Atelier";
+        break;
+      case "shipped":
+        statusTitle = carrier ? `Dispatched via ${carrier}` : "Order Shipped & In Transit";
+        break;
+      case "delivered":
+        statusTitle = "Order Delivered";
+        break;
+      case "cancelled":
+        statusTitle = "Order Cancelled";
+        break;
+    }
+
+    const milestone: OrderTrackingHistoryItem = {
+      id: `trk_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      status: targetStatus,
+      title: statusTitle,
+      description:
+        trackingNote?.trim() ||
+        (carrier && trackingNumber
+          ? `Package in transit via ${carrier} (AWB: ${trackingNumber}).`
+          : `Status changed to ${targetStatus}.`),
+      location: location?.trim() || undefined,
+      timestamp: new Date().toISOString(),
+      updatedBy: adminEmail || adminUid,
+    };
+
+    const updatedHistory = [...existingHistory, milestone];
+
+    const updatePayload: Record<string, unknown> = {
+      status: targetStatus,
+      trackingHistory: updatedHistory,
+      updatedAt: serverTimestamp(),
+    };
+
+    if (trackingNumber !== undefined) updatePayload.trackingNumber = trackingNumber?.trim() || null;
+    if (carrier !== undefined) updatePayload.carrier = carrier?.trim() || null;
+    if (finalTrackingUrl !== undefined) updatePayload.trackingUrl = finalTrackingUrl?.trim() || null;
+    if (estimatedDelivery !== undefined) updatePayload.estimatedDelivery = estimatedDelivery?.trim() || null;
+
+    if (targetStatus === "shipped" && !currentData.shippedAt) {
+      updatePayload.shippedAt = serverTimestamp();
+    }
+    if (targetStatus === "delivered" && !currentData.deliveredAt) {
+      updatePayload.deliveredAt = serverTimestamp();
+    }
+
+    await updateDoc(orderRef, updatePayload);
+
+    // Audit log
+    await logAdminActivity({
+      adminId: adminUid,
+      adminEmail,
+      action: "UPDATE_ORDER_TRACKING",
+      entityType: "ORDER",
+      entityId: orderId,
+      description: `Updated order ${currentData.orderNumber || orderId} tracking: status=${targetStatus}${
+        carrier ? `, carrier=${carrier}` : ""
+      }${trackingNumber ? `, tracking=${trackingNumber}` : ""}.`,
+    });
+
+    return {
+      success: true,
+      message: `Order tracking updated successfully (${targetStatus.toUpperCase()}).`,
+    };
+  } catch (error: unknown) {
+    console.error("[OrdersService] Failed to update tracking:", error);
+    return {
+      success: false,
+      message: (error as Error)?.message || "Failed to update order tracking.",
+    };
+  }
+}
+
+/**
+ * ALLOCATE ORDER TO CUSTOMER ACCOUNT
+ *
+ * Links an order inquiry to a registered customer's UID.
+ * This ensures the customer immediately sees the order and live tracking in /account/orders.
+ */
+export async function allocateOrderToUser(
+  orderId: string,
+  targetUserId: string,
+  targetUserEmail?: string,
+  adminUid?: string,
+  adminEmail?: string
+): Promise<{ success: boolean; message: string }> {
+  if (!orderId || !targetUserId) {
+    return { success: false, message: "Order ID and Customer User ID are required." };
+  }
+
+  try {
+    const db = getFirebaseDb();
+    const orderRef = doc(db, ORDERS_COLLECTION, orderId);
+
+    const snap = await getDoc(orderRef);
+    if (!snap.exists()) {
+      return { success: false, message: "Order not found." };
+    }
+
+    const current = snap.data();
+
+    await updateDoc(orderRef, {
+      userId: targetUserId.trim(),
+      ...(targetUserEmail ? { customerEmail: targetUserEmail.trim() } : {}),
+      updatedAt: serverTimestamp(),
+    });
+
+    if (adminUid) {
+      await logAdminActivity({
+        adminId: adminUid,
+        adminEmail,
+        action: "ALLOCATE_ORDER",
+        entityType: "ORDER",
+        entityId: orderId,
+        description: `Allocated order ${current.orderNumber || orderId} to customer ${targetUserId} (${targetUserEmail || "unspecified email"}).`,
+      });
+    }
+
+    return {
+      success: true,
+      message: `Order successfully allocated to customer account.`,
+    };
+  } catch (error: unknown) {
+    console.error("[OrdersService] Failed to allocate order:", error);
+    return {
+      success: false,
+      message: (error as Error)?.message || "Failed to allocate order to customer.",
     };
   }
 }

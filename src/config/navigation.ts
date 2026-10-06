@@ -29,40 +29,38 @@ export interface NavItem {
 }
 
 export const mainNavigation: NavItem[] = [
-  { label: "Home", href: "/" },
   {
-    label: "Shop",
-    href: "/shop",
+    label: "Kurtis",
+    href: "/shop?category=kurtis",
     children: [
-      { label: "All Products", href: "/shop" },
-      { label: "New Arrivals", href: "/shop/collection/new-arrivals" },
-      { label: "Best Sellers", href: "/shop/collection/best-sellers" },
+      { label: "All Kurtis", href: "/shop" },
+      { label: "Side Cut Kurtis", href: "/shop/side-cut-kurtis" },
+      { label: "Umbrella Kurtis", href: "/shop/umbrella-kurtis" },
     ],
   },
   {
-    label: "Categories",
-    href: "/categories",
+    label: "3-Piece Sets",
+    href: "/shop/three-piece-sets",
+  },
+  {
+    label: "Bottomwear",
+    href: "/shop?category=bottomwear",
     children: [
-      { label: "Kids Wear", href: "/shop/kids-wear" },
-      { label: "Women's Wear", href: "/shop/womens-wear" },
-      { label: "Western Wear", href: "/shop/western-wear" },
-      { label: "Ethnic Wear", href: "/shop/ethnic-wear" },
-      { label: "Gowns / Frocks", href: "/shop/gowns-frocks" },
-      { label: "Festive & Party Wear", href: "/shop/festive-party-wear" },
-      { label: "Accessories (Trinketz)", href: "/shop/accessories-trinketz" },
+      { label: "Straight Pants", href: "/shop/straight-pants" },
+      { label: "Shimmer Leggings", href: "/shop/shimmer-leggings" },
     ],
   },
   {
-    label: "Collections",
-    href: "/collections",
+    label: "New Arrivals",
+    href: "/shop/collection/new-arrivals",
   },
   {
-    label: "About",
-    href: "/about",
+    label: "Best Sellers",
+    href: "/shop/collection/best-sellers",
   },
   {
-    label: "Contact",
-    href: "/contact",
+    label: "Deals & Offers",
+    href: "/shop?sort=price_asc",
   },
 ];
 
@@ -99,12 +97,12 @@ export const footerNavigation: FooterSection[] = [
   {
     title: "Categories",
     links: [
-      { label: "Kids Wear", href: "/shop/kids-wear" },
-      { label: "Women's Wear", href: "/shop/womens-wear" },
-      { label: "Western Wear", href: "/shop/western-wear" },
-      { label: "Ethnic Wear", href: "/shop/ethnic-wear" },
-      { label: "Gowns / Frocks", href: "/shop/gowns-frocks" },
-      { label: "Festive & Party Wear", href: "/shop/festive-party-wear" },
+      { label: "Side Cut Kurtis", href: "/shop/side-cut-kurtis" },
+      { label: "Umbrella Kurtis", href: "/shop/umbrella-kurtis" },
+      { label: "3 Piece Sets", href: "/shop/three-piece-sets" },
+      { label: "Straight Pants", href: "/shop/straight-pants" },
+      { label: "Shimmer Leggings", href: "/shop/shimmer-leggings" },
+      { label: "Ethnic & Festive Wear", href: "/shop/ethnic-wear" },
       { label: "Accessories (Trinketz)", href: "/shop/accessories-trinketz" },
     ],
   },

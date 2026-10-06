@@ -12,14 +12,14 @@ import { formatPrice } from "@/config/constants";
 import { cn } from "@/lib/utils";
 
 const TRENDING_KEYWORDS = [
+  "Side Cut Kurtis",
+  "Umbrella Kurtis",
+  "3 Piece Sets",
+  "Straight Pants",
+  "Shimmer Leggings",
   "Kurtis",
-  "Gowns",
-  "Frocks",
   "Festive Wear",
-  "Silk Sarees",
-  "Anarkali",
   "Trinketz",
-  "Western Wear",
 ];
 
 interface HeaderSearchProps {
@@ -30,7 +30,7 @@ interface HeaderSearchProps {
 
 export function HeaderSearch({
   className,
-  placeholder = "Search kurtis, frocks, gowns, trinketz...",
+  placeholder = "Search side cut kurtis, 3 piece sets, shimmer leggings...",
   isMobile = false,
 }: HeaderSearchProps) {
   const router = useRouter();
@@ -206,7 +206,7 @@ export function HeaderSearch({
           aria-label="Search catalogue"
           autoComplete="off"
           spellCheck="false"
-          className="w-full h-10 sm:h-10.5 pl-10 pr-20 bg-white border border-neutral-300 hover:border-neutral-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 rounded-xl text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 shadow-2xs transition-all outline-none"
+          className="w-full h-10 sm:h-10.5 pl-10 pr-20 bg-white border border-neutral-300 hover:border-neutral-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 rounded-xl text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 shadow-2xs transition-all outline-none font-amazon"
         />
 
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">

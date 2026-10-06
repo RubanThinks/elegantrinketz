@@ -27,12 +27,12 @@ interface MobileDrawerProps {
 const quickCategories = [
   { label: "New Arrivals", href: "/shop/collection/new-arrivals", badge: "New", isHot: true },
   { label: "Bestsellers", href: "/shop/collection/best-sellers", badge: "Trending", isHot: true },
-  { label: "Women's Wear", href: "/shop/womens-wear" },
-  { label: "Ethnic Wear & Kurtis", href: "/shop/ethnic-wear" },
-  { label: "Western Wear", href: "/shop/western-wear" },
-  { label: "Gowns & Frocks", href: "/shop/gowns-frocks" },
-  { label: "Festive & Party Wear", href: "/shop/festive-party-wear" },
-  { label: "Kids Wear", href: "/shop/kids-wear" },
+  { label: "Side Cut Kurtis", href: "/shop/side-cut-kurtis", badge: "Hot" },
+  { label: "Umbrella Kurtis", href: "/shop/umbrella-kurtis" },
+  { label: "3 Piece Sets", href: "/shop/three-piece-sets", badge: "Popular" },
+  { label: "Straight Pants", href: "/shop/straight-pants" },
+  { label: "Shimmer Leggings", href: "/shop/shimmer-leggings" },
+  { label: "Ethnic & Festive Wear", href: "/shop/ethnic-wear" },
   { label: "Accessories & Trinketz", href: "/shop/accessories-trinketz" },
 ];
 
@@ -83,45 +83,45 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
       {/* Drawer Body — Native Shopping App Drawer */}
       <div className="relative w-[85%] max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-300">
         <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col">
-          {/* Top User Card (Myntra / Purplle style pink gradient card) */}
-          <div className="bg-gradient-to-br from-rose-500 via-pink-500 to-rose-600 text-white p-5 relative select-none">
+          {/* Top User Card — Solid E-Commerce Mobile App Header */}
+          <div className="bg-neutral-950 text-white p-5 relative select-none">
             {/* Close Button */}
             <button
               type="button"
               onClick={onClose}
               aria-label="Close menu"
-              className="absolute top-4 right-4 p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             {/* Profile Greeting */}
             <div className="flex items-center gap-3 mt-1">
-              <div className="w-12 h-12 rounded-full p-[2px] bg-white shadow-xs shrink-0 overflow-hidden">
+              <div className="w-11 h-11 rounded-full p-[1px] bg-white/20 shrink-0 overflow-hidden">
                 {isAuthenticated && user?.photoURL ? (
                   <Image
                     src={user.photoURL}
                     alt={profile?.displayName || "Profile"}
-                    width={48}
-                    height={48}
+                    width={44}
+                    height={44}
                     unoptimized
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
-                    <User className="w-6 h-6" />
+                  <div className="w-full h-full rounded-full bg-neutral-800 flex items-center justify-center text-neutral-300">
+                    <User className="w-5 h-5" />
                   </div>
                 )}
               </div>
 
               <div className="flex-1 min-w-0 pr-6">
-                <p className="text-[11px] uppercase tracking-wider text-pink-100 font-medium">
+                <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold font-flipkart">
                   {isAuthenticated ? "Welcome Back" : "Welcome"}
                 </p>
-                <h3 className="font-bold text-base truncate">
+                <h3 className="font-bold text-sm truncate font-flipkart">
                   {isAuthenticated
                     ? profile?.displayName || user?.displayName || "Shopper"
-                    : "Fashion Explorer"}
+                    : "Fashion Shopper"}
                 </h3>
               </div>
             </div>
@@ -133,7 +133,7 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                   <Link
                     href="/account/orders"
                     onClick={onClose}
-                    className="flex-1 py-1.5 px-3 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-xs text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                    className="flex-1 py-1.5 px-3 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors font-flipkart"
                   >
                     <Package className="w-3.5 h-3.5" />
                     <span>My Orders</span>
@@ -141,7 +141,7 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                   <Link
                     href="/wishlist"
                     onClick={onClose}
-                    className="flex-1 py-1.5 px-3 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-xs text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                    className="flex-1 py-1.5 px-3 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors font-flipkart"
                   >
                     <Heart className="w-3.5 h-3.5" />
                     <span>Wishlist</span>
@@ -151,7 +151,7 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 <Link
                   href="/login"
                   onClick={onClose}
-                  className="w-full py-2 px-4 rounded-full bg-white text-rose-600 hover:bg-pink-50 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                  className="w-full py-2 px-4 rounded-lg bg-[#ff9f00] text-neutral-950 hover:bg-[#f39700] text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all font-flipkart"
                 >
                   <span>Sign In / Register</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -237,12 +237,12 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         </div>
 
         {/* Bottom Drawer Bar: WhatsApp Order Assistance */}
-        <div className="p-4 border-t border-rose-100 bg-rose-50/40 space-y-2.5">
+        <div className="p-4 border-t border-neutral-200 bg-neutral-50 space-y-2">
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-bold hover:bg-[#20bd5a] transition-all shadow-sm shadow-[#25D366]/20 active:scale-98"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#20bd5a] transition-all shadow-sm active:scale-98 font-flipkart"
           >
             <WhatsAppIcon className="w-4 h-4" />
             <span>Order via WhatsApp</span>
@@ -255,7 +255,7 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 logout();
                 onClose();
               }}
-              className="w-full text-center text-[11px] font-medium text-neutral-400 hover:text-rose-600 transition-colors py-1"
+              className="w-full text-center text-[11px] font-bold text-neutral-500 hover:text-red-600 transition-colors py-1 cursor-pointer"
             >
               Sign Out
             </button>

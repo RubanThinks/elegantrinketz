@@ -11,6 +11,7 @@ import {
   Minus,
   ArrowRight,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
 import type { Product, ProductSize } from "@/types";
 import { siteConfig } from "@/config/site";
 import { formatPrice, getDiscountPercentage } from "@/config/constants";
@@ -131,24 +132,34 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
 
   return (
     <div className="space-y-6">
-      {/* Pricing Header */}
-      <div className="flex items-baseline space-x-3 pb-4 border-b border-neutral-200/70">
-        <span className="text-2xl sm:text-3xl font-bold text-neutral-950 tracking-tight">
-          {formatPrice(product.price)}
-        </span>
+      {/* Amazon Exact PDP Pricing Hierarchy & Deal Psychography */}
+      <div className="space-y-1.5 pb-4 border-b border-neutral-200/80 font-amazon">
+        <div className="flex items-baseline gap-3 flex-wrap">
+          {hasDiscount && discountPercent > 0 && (
+            <span className="text-2xl font-light text-[#cc0c39]">
+              -{discountPercent}%
+            </span>
+          )}
+          <span className="amazon-pdp-price">
+            {formatPrice(product.price)}
+          </span>
+        </div>
+
         {hasDiscount && product.compareAtPrice && (
-          <>
-            <span className="text-base text-neutral-400 line-through">
-              {formatPrice(product.compareAtPrice)}
+          <div className="text-xs text-[#565959] space-x-1 font-amazon">
+            <span>M.R.P.:</span>
+            <span className="line-through">{formatPrice(product.compareAtPrice)}</span>
+            <span className="text-[#388e3c] font-semibold ml-1">
+              (You save {formatPrice(product.compareAtPrice - product.price)})
             </span>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
-              Save {discountPercent}%
-            </span>
-          </>
+          </div>
         )}
-        <span className="text-xs text-neutral-500 font-light">
-          Ordering &amp; delivery details confirmed on WhatsApp
-        </span>
+
+        <div className="flex items-center gap-2 pt-0.5 text-xs text-[#565959]">
+          <span>Inclusive of all taxes</span>
+          <span>•</span>
+          <span className="text-[#007600] font-semibold">FREE Delivery in Salem</span>
+        </div>
       </div>
 
       {/* Size Selector */}
@@ -271,29 +282,51 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
 
       {/* Action Buttons */}
       <div className="space-y-3 pt-2">
-        {/* Add to Bag CTA */}
-        {!isAvailableStock ? (
-          <Button
-            variant="primary"
-            size="lg"
-            disabled
-            className="w-full text-xs sm:text-sm uppercase tracking-wider font-semibold py-3.5 rounded-lg flex items-center justify-center gap-2 shadow-sm bg-neutral-300 text-neutral-500 cursor-not-allowed"
-          >
-            <span>Currently Sold Out</span>
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            variant="primary"
-            size="lg"
-            disabled={isAdding}
-            onClick={handleAddToCart}
-            className="w-full text-xs sm:text-sm uppercase tracking-wider font-semibold py-3.5 rounded-lg flex items-center justify-center gap-2 shadow-sm bg-neutral-900 hover:bg-neutral-950 text-white transition-all"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            <span>{isAdding ? "Adding to Bag..." : "Add to Bag"}</span>
-          </Button>
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Add to Bag CTA (Flipkart warm yellow high-converting style) */}
+          {!isAvailableStock ? (
+            <Button
+              variant="primary"
+              size="lg"
+              disabled
+              className="w-full text-xs sm:text-sm font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-xs bg-neutral-200 text-neutral-400 cursor-not-allowed font-flipkart"
+            >
+              <span>Sold Out</span>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              disabled={isAdding}
+              onClick={handleAddToCart}
+              className="w-full text-xs sm:text-sm font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 bg-[#FF9F00] hover:bg-[#F39700] active:scale-[0.98] text-white shadow-sm hover:shadow transition-all cursor-pointer font-flipkart"
+            >
+              <ShoppingBag className="w-4 h-4 text-white" />
+              <span>{isAdding ? "Adding..." : "Add to Bag"}</span>
+            </Button>
+          )}
+
+          {/* Buy Now on WhatsApp (Iconic Emerald Green High-Conversion Button) */}
+          {cleanPhone ? (
+            <a
+              href={whatsAppEnquiryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full"
+            >
+              <Button
+                type="button"
+                variant="primary"
+                size="lg"
+                className="w-full text-xs sm:text-sm font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-[#25D366] via-[#20BD5A] to-[#128C7E] hover:from-[#20BD5A] hover:to-[#0E7A6E] active:scale-[0.98] text-white shadow-md shadow-[#25D366]/25 hover:shadow-lg hover:shadow-[#25D366]/35 transition-all cursor-pointer font-flipkart"
+              >
+                <WhatsAppIcon className="w-4 h-4 text-white shrink-0" />
+                <span>Buy Now on WhatsApp</span>
+              </Button>
+            </a>
+          ) : null}
+        </div>
 
         {/* Polished Confirmation Banner (Inline, does not force leaving page) */}
         {showAddedConfirmation && (
@@ -336,48 +369,56 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
           </div>
         )}
 
-        {/* Secondary Actions: Wishlist & WhatsApp Direct Enquiry */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* Wishlist Button */}
+        {/* Secondary: Wishlist & Fast Delivery reassurance */}
+        <div className="flex items-center justify-between pt-1">
           <Button
             type="button"
             variant="outline"
-            size="md"
+            size="sm"
             onClick={() => toggleWishlist(product.id)}
             className={cn(
-              "w-full text-xs uppercase tracking-wider font-medium flex items-center justify-center gap-2 border-neutral-300 py-3 rounded-lg hover:border-neutral-900 transition-colors",
+              "text-xs font-medium flex items-center gap-1.5 border-neutral-200 py-2 px-3 rounded-lg hover:border-neutral-900 transition-colors",
               isSaved && "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100"
             )}
           >
             <Heart
               className={cn(
-                "w-4 h-4 transition-colors",
-                isSaved ? "fill-rose-600 text-rose-600" : "text-neutral-600"
+                "w-3.5 h-3.5 transition-colors",
+                isSaved ? "fill-rose-600 text-rose-600" : "text-neutral-500"
               )}
             />
-            <span>{isSaved ? "Saved" : "Wishlist"}</span>
+            <span>{isSaved ? "Saved to Wishlist" : "Save for Later"}</span>
           </Button>
 
-          {/* Ask on WhatsApp */}
-          {cleanPhone ? (
-            <a
-              href={whatsAppEnquiryUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
-            >
-              <Button
-                type="button"
-                variant="outline"
-                size="md"
-                className="w-full text-xs uppercase tracking-wider font-medium flex items-center justify-center gap-2 border-emerald-300 text-emerald-800 hover:bg-emerald-50 hover:text-emerald-900 py-3 rounded-lg"
-              >
-                <MessageCircle className="w-4 h-4 text-[#25D366] fill-[#25D366]" />
-                <span>Ask on WhatsApp</span>
-              </Button>
-            </a>
-          ) : null}
+          <span className="text-[11px] text-neutral-500 font-light">
+            ⚡ Instant order confirmation &amp; sizing help on WhatsApp
+          </span>
         </div>
+      </div>
+
+      {/* Mobile App PWA Sticky Bottom Action Bar (Flipkart & Amazon mobile app feel) */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border-t border-neutral-200/90 px-3 py-2 flex items-center gap-2.5 lg:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.1)] pb-safe">
+        <button
+          type="button"
+          disabled={!isAvailableStock || isAdding}
+          onClick={handleAddToCart}
+          className="flex-1 h-11 bg-[#FF9F00] hover:bg-[#F39700] active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-transform cursor-pointer disabled:opacity-50 font-flipkart"
+        >
+          <ShoppingBag className="w-4 h-4 text-white" />
+          <span>{isAdding ? "Adding..." : "Add to Bag"}</span>
+        </button>
+
+        {cleanPhone ? (
+          <a
+            href={whatsAppEnquiryUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 h-11 bg-gradient-to-r from-[#25D366] via-[#20BD5A] to-[#128C7E] active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-[#25D366]/25 transition-transform cursor-pointer font-flipkart"
+          >
+            <WhatsAppIcon className="w-4 h-4 text-white shrink-0" />
+            <span>Buy on WhatsApp</span>
+          </a>
+        ) : null}
       </div>
     </div>
   );

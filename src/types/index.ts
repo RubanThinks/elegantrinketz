@@ -234,7 +234,23 @@ export interface OrderItem {
   sizeName?: string | null;
 }
 
-export type OrderStatus = "pending" | "confirmed" | "cancelled";
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
+export interface OrderTrackingHistoryItem {
+  id?: string;
+  status: OrderStatus;
+  title: string;
+  description?: string;
+  location?: string;
+  timestamp: string;
+  updatedBy?: string;
+}
 
 export interface Order {
   id: string;
@@ -257,6 +273,16 @@ export interface Order {
   cancelReason?: string | null;
   /** Whether inventory was atomically deducted on confirmation */
   inventoryDeducted?: boolean;
+
+  /** Fulfillment & Courier Tracking */
+  trackingNumber?: string | null;
+  carrier?: string | null;
+  trackingUrl?: string | null;
+  estimatedDelivery?: string | null;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
+  trackingHistory?: OrderTrackingHistoryItem[];
+
   createdAt: string;
   updatedAt: string;
 }
@@ -292,4 +318,32 @@ export interface AdminActivity {
   entityId: string | null;
   description: string;
   createdAt: string;
+}
+
+/* ------------------------------------------------------------------ */
+/*  PRODUCT REVIEW TYPES                                               */
+/* ------------------------------------------------------------------ */
+
+export interface ProductReview {
+  id: string;
+  productId: string;
+  productSlug?: string;
+  authorName: string;
+  authorCity?: string;
+  rating: number; // 1 to 5
+  title: string;
+  comment: string;
+  isVerifiedPurchase: boolean;
+  helpfulCount: number;
+  createdAt: string;
+}
+
+export interface CreateReviewInput {
+  productId: string;
+  productSlug?: string;
+  authorName: string;
+  authorCity?: string;
+  rating: number;
+  title: string;
+  comment: string;
 }

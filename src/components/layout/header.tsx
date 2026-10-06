@@ -39,10 +39,10 @@ export function Header() {
     <>
       <header
         className={cn(
-          "sticky top-0 z-40 w-full transition-all duration-300 bg-white/95 backdrop-blur-md border-b",
+          "sticky top-0 z-40 w-full transition-all duration-200 bg-white border-b",
           isScrolled
-            ? "border-rose-100 shadow-[0_4px_16px_rgba(225,29,72,0.05)] py-2"
-            : "border-rose-100/60 py-2.5 sm:py-3.5"
+            ? "border-neutral-200 shadow-sm py-2"
+            : "border-neutral-200/80 py-2.5 sm:py-3"
         )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,89 +54,96 @@ export function Header() {
                 type="button"
                 onClick={() => setIsMobileMenuOpen(true)}
                 aria-label="Open navigation menu"
-                className="p-2 -ml-2 text-neutral-800 hover:text-rose-600 focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-lg active:scale-95 transition-transform"
+                className="p-2 -ml-2 text-neutral-800 hover:text-neutral-900 focus:outline-none rounded-lg active:scale-95 transition-transform"
               >
                 <Menu className="w-5 h-5 stroke-[2]" />
               </button>
             </div>
 
-            {/* Brand Logo & Stylish High-Fashion Name */}
+            {/* Brand Logo & Clean E-Commerce Storefront Name */}
             <div className="flex items-center">
               <Link
                 href="/"
-                className="group inline-flex items-center gap-2 sm:gap-3 transition-opacity hover:opacity-95"
+                className="group inline-flex items-center gap-2 sm:gap-2.5 transition-opacity hover:opacity-95"
                 aria-label={`${siteConfig.name} — Home`}
               >
-                {/* Logo Halo */}
+                {/* Logo Solid Container */}
                 <div
                   className={cn(
-                    "relative rounded-full p-[1.5px] bg-gradient-to-tr from-rose-400 via-pink-300 to-rose-500 shadow-xs group-hover:shadow-md transition-all duration-300 shrink-0",
-                    isScrolled ? "w-8 h-8 sm:w-10 sm:h-10" : "w-9 h-9 sm:w-11 sm:h-11"
+                    "relative rounded-full border border-neutral-200 bg-white p-[1px] shrink-0 transition-all",
+                    isScrolled ? "w-8 h-8 sm:w-9 sm:h-9" : "w-9 h-9 sm:w-10 sm:h-10"
                   )}
                 >
-                  <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center p-[1px]">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
                     <Image
                       src={siteConfig.logo}
                       alt={siteConfig.name}
-                      width={44}
-                      height={44}
+                      width={40}
+                      height={40}
                       priority
                       className="w-full h-full object-contain rounded-full"
                     />
                   </div>
                 </div>
 
-                {/* Stylish Brand Wordmark & Tagline */}
+                {/* Brand Wordmark & Department Tagline */}
                 <div className="flex flex-col text-left">
-                  <span className="font-serif italic font-bold text-base sm:text-lg tracking-wide text-neutral-900 group-hover:text-rose-600 transition-colors">
+                  <span className="font-bold text-base sm:text-lg tracking-tight text-neutral-950 font-flipkart leading-tight">
                     {siteConfig.name}
                   </span>
-                  <span className="text-[7.5px] sm:text-[9px] uppercase tracking-[0.2em] text-rose-500 font-semibold leading-tight hidden xs:block">
-                    {siteConfig.tagline}
+                  <span className="text-[9px] uppercase tracking-wider text-rose-600 font-bold leading-tight hidden xs:block">
+                    Women&apos;s Fashion Store
                   </span>
                 </div>
               </Link>
             </div>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center space-x-7">
+            <nav className="hidden lg:flex items-center space-x-6">
               {mainNavigation.map((item) => {
                 const isActive =
                   item.href === "/"
                     ? pathname === "/"
                     : pathname.startsWith(item.href);
 
+                const isDeal = item.label.includes("Deals");
+
                 return (
                   <div key={item.label} className="relative group">
                     <Link
                       href={item.href}
                       className={cn(
-                        "text-xs uppercase tracking-wider font-semibold py-1.5 transition-colors relative",
-                        isActive
-                          ? "text-rose-600 font-bold"
-                          : "text-neutral-700 hover:text-rose-600"
+                        "text-xs uppercase tracking-wider font-bold py-1.5 transition-colors relative flex items-center gap-1",
+                        isDeal
+                          ? "text-red-600 font-extrabold"
+                          : isActive
+                          ? "text-neutral-950"
+                          : "text-neutral-700 hover:text-neutral-950"
                       )}
                     >
                       {item.label}
+                      {isDeal && (
+                        <span className="px-1.5 py-0.2 rounded text-[9px] bg-red-600 text-white font-extrabold tracking-normal">
+                          HOT
+                        </span>
+                      )}
                       <span
                         className={cn(
-                          "absolute left-0 -bottom-0.5 w-full h-[2px] bg-rose-500 transition-transform duration-200 origin-left rounded-full",
-                          isActive
-                            ? "scale-x-100"
-                            : "scale-x-0 group-hover:scale-x-100"
+                          "absolute left-0 -bottom-0.5 w-full h-[2px] bg-neutral-950 transition-transform duration-200 origin-left",
+                          isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                         )}
                       />
                     </Link>
 
                     {/* Desktop Dropdown Menu if children present */}
                     {item.children && (
-                      <div className="absolute left-0 top-full pt-2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
-                        <div className="bg-white border border-rose-100 rounded-xl shadow-xl py-2 min-w-[210px] backdrop-blur-md">
+                      <div className="absolute left-0 top-full pt-2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-150 z-50">
+                        <div className="bg-white border border-neutral-200 rounded-xl shadow-lg py-1.5 min-w-[200px]">
                           {item.children.map((sub) => (
                             <Link
                               key={sub.label}
                               href={sub.href}
-                              className="block px-4 py-2 text-xs font-medium text-neutral-600 hover:text-rose-600 hover:bg-rose-50/60 transition-colors"
+                              className="block px-4 py-2 text-xs font-semibold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-50 transition-colors"
                             >
                               {sub.label}
                             </Link>
@@ -165,7 +172,7 @@ export function Header() {
 
               {/* Desktop Header Search Bar (Amazon & Flipkart style) */}
               <div className="hidden lg:block w-56 xl:w-72">
-                <HeaderSearch placeholder="Search kurtis, gowns, frocks..." />
+                <HeaderSearch placeholder="Search kurtis, 3-piece sets, pants..." />
               </div>
 
               {/* Account (desktop) */}

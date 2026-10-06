@@ -36,8 +36,8 @@ export function WhatsAppFloatingButton() {
             : "opacity-0 translate-x-2"
         )}
       >
-        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2" />
-        Chat with styling concierge
+        <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2" />
+        Order &amp; Chat on WhatsApp
       </div>
 
       {/* Floating Action Button */}

@@ -21,7 +21,7 @@ import {
   updateProduct,
   slugify,
 } from "@/services/products";
-import { getCategories } from "@/services/categories";
+import { getCategories, getAllCategoriesAdmin } from "@/services/categories";
 import { getCollections } from "@/services/collections";
 import { useAuth } from "@/providers/auth-provider";
 import type {
@@ -163,14 +163,18 @@ export function ProductForm({
 
   useEffect(() => {
     async function loadTaxonomy() {
-      const [cats, cols] = await Promise.all([
-        getCategories(),
-        getCollections(),
-      ]);
-      setCategories(cats);
-      setCollections(cols);
-      if (!categoryId && cats.length > 0 && !isEditing) {
-        setCategoryId(cats[0].id);
+      try {
+        const [cats, cols] = await Promise.all([
+          getAllCategoriesAdmin().catch(() => getCategories()),
+          getCollections(),
+        ]);
+        setCategories(cats);
+        setCollections(cols);
+        if (!categoryId && cats.length > 0 && !isEditing) {
+          setCategoryId(cats[0].id);
+        }
+      } catch (err) {
+        console.error("Failed to load taxonomy in product form:", err);
       }
     }
     loadTaxonomy();
@@ -206,6 +210,11 @@ export function ProductForm({
     const numPrice = parseFloat(price);
     if (isNaN(numPrice) || numPrice <= 0) {
       setErrorMessage("Please enter a valid price greater than zero.");
+      return;
+    }
+
+    if (targetStatus === "published" && !categoryId) {
+      setErrorMessage("Please select a primary category for this product before publishing.");
       return;
     }
 
@@ -557,7 +566,7 @@ export function ProductForm({
             {/* Category Dropdown */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-neutral-700 uppercase tracking-wider block">
-                Primary Category
+                Primary Category <span className="text-rose-500">*</span>
               </label>
               <select
                 value={categoryId}

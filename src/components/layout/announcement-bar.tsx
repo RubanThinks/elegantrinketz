@@ -9,18 +9,20 @@ export function AnnouncementBar() {
   return (
     <aside
       aria-label="Announcement"
-      className="bg-gradient-to-r from-rose-600 via-pink-500 to-rose-600 text-white text-[11px] sm:text-xs tracking-wide py-1.5 px-3 text-center shadow-xs select-none"
+      className="bg-neutral-950 text-white text-[11px] sm:text-xs tracking-wide py-2 px-3 text-center border-b border-neutral-800 select-none font-flipkart"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap font-medium">
-        <Sparkles className="w-3 h-3 text-pink-200 shrink-0 animate-pulse" aria-hidden="true" />
+      <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap font-bold">
+        <span className="px-1.5 py-0.2 rounded bg-red-600 text-[10px] font-black uppercase tracking-wider text-white">
+          Offer
+        </span>
         <span>{siteConfig.announcement.message}</span>
         {siteConfig.announcement.link && (
           <Link
             href={siteConfig.announcement.link}
-            className="inline-flex items-center gap-0.5 font-bold text-white underline underline-offset-2 hover:text-pink-100 transition-colors ml-1"
+            className="inline-flex items-center gap-1 font-extrabold text-[#ff9f00] hover:underline transition-colors ml-1 uppercase text-[11px]"
           >
-            <span>{siteConfig.announcement.linkText || "Shop Now"}</span>
-            <ArrowRight className="w-3 h-3 ml-0.5" aria-hidden="true" />
+            <span>{siteConfig.announcement.linkText || "Shop Deals"}</span>
+            <ArrowRight className="w-3 h-3" aria-hidden="true" />
           </Link>
         )}
       </div>

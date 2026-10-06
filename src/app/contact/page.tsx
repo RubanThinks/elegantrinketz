@@ -78,14 +78,28 @@ export default function ContactPage() {
                 <WhatsAppIcon className="w-5 h-5 text-[#25D366] mt-0.5 shrink-0" />
                 <div>
                   <p className="font-medium text-[#1a1a1a] mb-1">WhatsApp</p>
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline text-[#25D366]"
-                  >
-                    Chat with us on WhatsApp
-                  </a>
+                  <div className="space-y-1">
+                    <a
+                      href={`https://wa.me/917845203893?text=${encodeURIComponent(
+                        `Hello ${siteConfig.name}, I have an inquiry.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block hover:underline text-[#25D366] font-medium"
+                    >
+                      +91 78452 03893 (Primary)
+                    </a>
+                    <a
+                      href={`https://wa.me/918838271225?text=${encodeURIComponent(
+                        `Hello ${siteConfig.name}, I have an inquiry.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block hover:underline text-[#25D366] font-medium"
+                    >
+                      +91 88382 71225 (Support)
+                    </a>
+                  </div>
                 </div>
               </div>
 

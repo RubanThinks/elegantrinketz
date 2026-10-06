@@ -32,15 +32,19 @@ export default async function ShopPage() {
   return (
     <div className="py-12 sm:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Page Header */}
-        <div className="text-center max-w-xl mx-auto mb-12 space-y-3">
-          <div className="w-10 h-px bg-[#D4AF37] mx-auto" />
-          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#1a1a1a] tracking-tight">
-            Shop All
-          </h1>
-          <p className="text-sm text-[#666] leading-relaxed font-light">
-            Explore our complete collection of thoughtfully styled women&apos;s fashion.
-          </p>
+        {/* E-Commerce Breadcrumb & Title */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-neutral-200 pb-4 mb-6 gap-2">
+          <div>
+            <nav className="text-[11px] font-medium text-neutral-500 mb-1">
+              <span>Home</span> <span className="mx-1">/</span> <span className="text-neutral-900 font-semibold">Shop</span>
+            </nav>
+            <h1 className="text-xl sm:text-2xl font-bold text-neutral-950 tracking-tight font-flipkart">
+              All Products
+            </h1>
+          </div>
+          <span className="text-xs font-semibold text-neutral-500">
+            Showing {allProducts.length} styles
+          </span>
         </div>
 
         {/* Dynamic Shop Catalog with Filtering and Sorting */}

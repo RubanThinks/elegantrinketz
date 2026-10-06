@@ -3,100 +3,103 @@ import Link from "next/link";
 import { ArrowRight, Sparkles, Flame } from "lucide-react";
 import { Hero } from "@/components/layout/hero";
 import { CategoryStory } from "@/components/category/category-story";
+import { ServiceAssuranceBar } from "@/components/home/service-assurance-bar";
+import { FlashDeals } from "@/components/home/flash-deals";
+import { CategoryGrid } from "@/components/home/category-grid";
+import { BudgetStore } from "@/components/home/budget-store";
 import { ProductGrid } from "@/components/product/product-grid";
 import { ProductCarousel } from "@/components/product/product-carousel";
-import { EditorialBanner } from "@/components/layout/editorial-banner";
 import { CampaignBanner } from "@/components/layout/campaign-banner";
-import { InstagramSection } from "@/components/layout/instagram-section";
 import { siteConfig } from "@/config/site";
 import { getCategories } from "@/services/categories";
 import { getProducts, toProductCardData } from "@/services/products";
 
 export default async function HomePage() {
-  const [newArrivalsRes, bestSellersRes, categories] = await Promise.all([
+  const [newArrivalsRes, bestSellersRes, allProductsRes, categories] = await Promise.all([
     getProducts({ isNew: true, limit: 4 }),
     getProducts({ isBestSeller: true, limit: 8 }),
+    getProducts({ limit: 8 }),
     getCategories(),
   ]);
 
   const newArrivals = newArrivalsRes.products.map(toProductCardData);
   const bestSellers = bestSellersRes.products.map(toProductCardData);
+  const dealProducts = (bestSellers.length > 0 ? bestSellers : allProductsRes.products.map(toProductCardData)).slice(0, 4);
 
   return (
-    <div className="flex flex-col w-full">
-      {/* 1. Hero Section — Vibrant Fashion Banner */}
-      <Hero
-        headline="Elegance in Every Dress"
-        description="Discover styles designed to make every occasion feel special."
-        ctaText="Shop Collection"
-        ctaHref="/shop"
-        secondaryCtaText="Explore Categories"
-        secondaryCtaHref="/categories"
-      />
-
-      {/* 2. Shop by Category — App Story Circles */}
+    <div className="flex flex-col w-full bg-white">
+      {/* 1. Quick Category Story Strip */}
       <CategoryStory categories={categories} />
 
-      {/* 3. New Arrivals Section */}
-      <section className="py-10 sm:py-16 bg-white">
+      {/* 2. High-Converting Promotional Hero Banner Carousel */}
+      <Hero />
+
+      {/* 3. Solid E-Commerce Service Guarantees Strip */}
+      <ServiceAssuranceBar />
+
+      {/* 4. ⚡ Flash Deals / Deal of the Day with Countdown */}
+      <FlashDeals products={dealProducts} />
+
+      {/* 5. Shop by Category Visual Department Tiles */}
+      <CategoryGrid />
+
+      {/* 6. Trending Best Sellers — Product Carousel */}
+      <section className="py-10 sm:py-14 bg-white border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-2">
             <div>
-              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Just Landed</span>
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#ff9f00] font-flipkart mb-1">
+                <Flame className="w-3.5 h-3.5 fill-[#ff9f00]" />
+                <span>Customer Favorites</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-serif italic font-bold text-neutral-900 tracking-tight">
-                New Arrivals
+              <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight font-flipkart">
+                Trending Bestsellers
+              </h2>
+            </div>
+            <Link
+              href="/shop/collection/best-sellers"
+              className="group inline-flex items-center text-xs font-bold uppercase tracking-wider text-neutral-900 hover:text-red-600 transition-colors"
+            >
+              <span>View All Bestsellers</span>
+              <ArrowRight className="ml-1 w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+
+          <ProductCarousel products={bestSellers.length > 0 ? bestSellers : dealProducts} />
+        </div>
+      </section>
+
+      {/* 7. Budget Store · Shop by Price */}
+      <BudgetStore />
+
+      {/* 8. New Arrivals Product Grid */}
+      <section className="py-10 sm:py-14 bg-neutral-50/70 border-t border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-2">
+            <div>
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-600 font-flipkart mb-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Fresh in Store</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight font-flipkart">
+                Latest New Arrivals
               </h2>
             </div>
             <Link
               href="/shop/collection/new-arrivals"
-              className="group inline-flex items-center text-xs font-bold uppercase tracking-wider text-rose-600 hover:text-rose-700 transition-colors"
+              className="group inline-flex items-center text-xs font-bold uppercase tracking-wider text-neutral-900 hover:text-rose-600 transition-colors"
             >
               <span>Explore All</span>
               <ArrowRight className="ml-1 w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
 
-          <ProductGrid products={newArrivals} />
+          <ProductGrid products={newArrivals.length > 0 ? newArrivals : dealProducts} />
         </div>
       </section>
 
-      {/* 4. Editorial Story Banner */}
-      <EditorialBanner />
-
-      {/* 5. Trending & Best Sellers — Product Carousel */}
-      <section className="py-10 sm:py-16 bg-rose-50/40 border-y border-rose-100/70">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-2">
-            <div>
-              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">
-                <Flame className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
-                <span>Popular Picks</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-serif italic font-bold text-neutral-900 tracking-tight">
-                Trending at {siteConfig.name}
-              </h2>
-            </div>
-            <Link
-              href="/shop/collection/best-sellers"
-              className="group inline-flex items-center text-xs font-bold uppercase tracking-wider text-rose-600 hover:text-rose-700 transition-colors"
-            >
-              <span>View All</span>
-              <ArrowRight className="ml-1 w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </div>
-
-          <ProductCarousel products={bestSellers} />
-        </div>
-      </section>
-
-      {/* 6. WhatsApp Instant Shopping CTA */}
+      {/* 9. Direct WhatsApp Shopping Support Strip */}
       <CampaignBanner />
-
-      {/* 7. Why Elegant Trinketz */}
-      <InstagramSection />
     </div>
   );
 }

@@ -96,7 +96,7 @@ export function ShopCatalog({ initialProducts, categories }: ShopCatalogProps) {
                 : "bg-white border-neutral-200 text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
             )}
           >
-            All Creations ({initialProducts.length})
+            All Styles ({initialProducts.length})
           </button>
           {categories.map((cat) => (
             <button
