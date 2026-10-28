@@ -27,6 +27,7 @@ import {
   Calendar,
   Send,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -281,6 +282,11 @@ export default function AdminOrderDetailPage() {
     setFeedbackMessage(null);
 
     const activeCarrier = trackCarrier === "Other" ? customCarrier.trim() : trackCarrier.trim();
+    // Auto-generate carrier tracking URL silently in background if known carrier & AWB provided
+    const autoTrackingUrl =
+      (activeCarrier && trackNumber.trim() ? getCarrierTrackingUrl(activeCarrier, trackNumber.trim()) : null) ||
+      undefined;
+
     const result = await updateOrderTracking({
       orderId: order.id,
       adminUid: user.uid,
@@ -288,7 +294,7 @@ export default function AdminOrderDetailPage() {
       status: trackStatus,
       carrier: activeCarrier || undefined,
       trackingNumber: trackNumber.trim() || undefined,
-      trackingUrl: trackUrl.trim() || undefined,
+      trackingUrl: autoTrackingUrl,
       estimatedDelivery: trackEstimatedDelivery ? new Date(trackEstimatedDelivery).toISOString() : undefined,
       trackingNote: trackNote.trim() || undefined,
       location: trackLocation.trim() || undefined,
@@ -472,9 +478,9 @@ export default function AdminOrderDetailPage() {
               href={customerWhatsAppLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#25D366] hover:bg-[#1da851] text-white shadow-2xs transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#25D366] hover:bg-[#1da851] text-white shadow-xs transition-colors cursor-pointer"
             >
-              <MessageCircle className="w-3.5 h-3.5 fill-white" />
+              <WhatsAppIcon className="w-3.5 h-3.5 text-white" />
               <span>WhatsApp Customer</span>
             </a>
           )}
@@ -1009,9 +1015,9 @@ export default function AdminOrderDetailPage() {
                   href={customerWhatsAppLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold bg-[#25D366] hover:bg-[#1da851] text-white transition-colors cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold bg-[#25D366] hover:bg-[#1da851] text-white transition-colors cursor-pointer shadow-xs"
                 >
-                  <MessageCircle className="w-4 h-4 fill-white" />
+                  <WhatsAppIcon className="w-4 h-4 text-white" />
                   <span>Open WhatsApp Chat</span>
                 </a>
               </div>
@@ -1194,38 +1200,9 @@ export default function AdminOrderDetailPage() {
                     value={trackNumber}
                     onChange={(e) => handleTrackingNumberChange(e.target.value)}
                     placeholder="e.g. DEL789123456"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg font-mono text-neutral-900 focus:outline-none focus:border-rose-600"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg font-mono text-neutral-900 focus:outline-none focus:border-rose-600 shadow-xs"
                   />
                 </div>
-              </div>
-
-              {/* Tracking URL */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="font-semibold text-neutral-700">
-                    Carrier Tracking Web URL
-                  </label>
-                  {trackCarrier && trackNumber && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const finalC = trackCarrier === "Other" ? customCarrier : trackCarrier;
-                        const gen = getCarrierTrackingUrl(finalC, trackNumber);
-                        if (gen) setTrackUrl(gen);
-                      }}
-                      className="text-[10px] text-rose-600 hover:text-rose-700 underline font-medium cursor-pointer"
-                    >
-                      Generate Carrier Link
-                    </button>
-                  )}
-                </div>
-                <input
-                  type="url"
-                  value={trackUrl}
-                  onChange={(e) => setTrackUrl(e.target.value)}
-                  placeholder="https://www.delhivery.com/track/package/..."
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:border-rose-600 font-mono text-xs"
-                />
               </div>
 
               {/* Estimated Delivery & Current Location */}
@@ -1271,23 +1248,19 @@ export default function AdminOrderDetailPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
-                <Button
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-200">
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() => setShowTrackingModal(false)}
                   disabled={isUpdatingTracking}
-                  className="text-xs"
+                  className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-semibold rounded-lg shadow-xs transition-colors cursor-pointer"
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
-                  variant="primary"
-                  size="sm"
                   disabled={isUpdatingTracking}
-                  className="bg-rose-600 hover:bg-rose-700 text-white text-xs cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm hover:shadow active:translate-y-px transition-all cursor-pointer flex items-center gap-1.5"
                 >
                   {isUpdatingTracking ? (
                     <>
@@ -1300,7 +1273,7 @@ export default function AdminOrderDetailPage() {
                       <span>Save Tracking &amp; Notify Portal</span>
                     </>
                   )}
-                </Button>
+                </button>
               </div>
             </form>
           </div>

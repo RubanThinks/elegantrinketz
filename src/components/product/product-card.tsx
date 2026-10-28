@@ -58,7 +58,7 @@ export function ProductCard({ product, className, priority = false }: ProductCar
   return (
     <article
       className={cn(
-        "group relative flex flex-col overflow-hidden bg-white rounded-xl border border-neutral-200 hover:border-neutral-900 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200",
+        "group relative flex flex-col overflow-hidden bg-white rounded-xl border border-rose-200/80 hover:border-[#881337] shadow-xs hover:shadow-md hover:ring-1 hover:ring-[#881337]/30 hover:-translate-y-0.5 transition-all duration-200",
         isOutOfStock && "opacity-85",
         className
       )}
@@ -97,7 +97,7 @@ export function ProductCard({ product, className, priority = false }: ProductCar
         {/* Badges Overlay (Top-Left) — Solid E-Commerce Deal Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1 z-10 pointer-events-none">
           {isOutOfStock ? (
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-neutral-900 text-white font-flipkart uppercase tracking-wider">
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#881337] text-white uppercase tracking-wider shadow-xs">
               Sold Out
             </span>
           ) : (
@@ -150,7 +150,7 @@ export function ProductCard({ product, className, priority = false }: ProductCar
               "w-full py-2 px-3 text-xs font-bold uppercase tracking-wider rounded-lg text-center shadow-sm transition-all flex items-center justify-center gap-1.5 font-flipkart",
               isOutOfStock
                 ? "bg-neutral-200 text-neutral-500 cursor-not-allowed pointer-events-none"
-                : "bg-white text-neutral-900 hover:bg-neutral-950 hover:text-white border border-neutral-300 active:scale-95"
+                : "bg-white text-[#881337] hover:bg-[#881337] hover:text-white border border-rose-300 hover:border-[#881337] shadow-xs active:scale-95 font-bold"
             )}
           >
             <Eye className="w-3.5 h-3.5" />

@@ -137,13 +137,13 @@ export default function AdminDashboardPage() {
             <Link
               key={stat.title}
               href={stat.href}
-              className="border border-neutral-200/90 p-5 bg-white rounded-2xl flex flex-col justify-between space-y-4 shadow-2xs hover:shadow-sm hover:border-neutral-300 transition-all group"
+              className="border border-neutral-200 p-5 bg-white rounded-xl flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md transition-all group"
             >
               <div className="flex items-center justify-between">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${stat.color}`}>
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shadow-xs ${stat.color}`}>
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">
                   {stat.badge === "Cloudinary Connected" ? "Media CDN Active" : stat.badge}
                 </span>
               </div>
@@ -152,7 +152,7 @@ export default function AdminDashboardPage() {
                 <div className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
                   {stat.count}
                 </div>
-                <p className="text-xs text-neutral-500 mt-0.5">{stat.title}</p>
+                <p className="text-xs text-neutral-500 mt-0.5 font-medium">{stat.title}</p>
               </div>
 
               <div className="flex items-center text-xs font-semibold text-neutral-700 group-hover:text-rose-600 transition-colors pt-2 border-t border-neutral-100">
@@ -165,12 +165,12 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Production Services Badges */}
-      <div className="border border-neutral-200 bg-neutral-50/50 rounded-2xl p-6 space-y-4">
+      <div className="border border-neutral-200 bg-white rounded-xl p-6 space-y-4 shadow-sm">
         <h2 className="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-1.5">
           <Sparkles className="w-4 h-4 text-rose-600" /> Store Infrastructure &amp; Services
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-neutral-600">
-          <div className="flex items-start gap-2 bg-white p-3.5 rounded-xl border border-neutral-200/80">
+          <div className="flex items-start gap-2 bg-neutral-50 p-4 rounded-lg border border-neutral-200 shadow-xs">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-neutral-900">High-Res Media Delivery</p>
@@ -180,7 +180,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-start gap-2 bg-white p-3.5 rounded-xl border border-neutral-200/80">
+          <div className="flex items-start gap-2 bg-neutral-50 p-4 rounded-lg border border-neutral-200 shadow-xs">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-neutral-900">Variant-Level Inventory</p>
@@ -190,7 +190,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-start gap-2 bg-white p-3.5 rounded-xl border border-neutral-200/80">
+          <div className="flex items-start gap-2 bg-neutral-50 p-4 rounded-lg border border-neutral-200 shadow-xs">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-neutral-900">Primary & Hover Crossfade</p>

@@ -37,9 +37,9 @@ export function ServiceAssuranceBar() {
             return (
               <div
                 key={item.title}
-                className="flex items-start sm:items-center gap-2.5 sm:gap-3 bg-white p-2.5 sm:p-3.5 rounded-xl border border-neutral-200/90 shadow-2xs"
+                className="flex items-start sm:items-center gap-2.5 sm:gap-3 bg-white p-2.5 sm:p-3.5 rounded-xl border border-rose-200/90 hover:border-[#881337] shadow-xs transition-colors"
               >
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-neutral-900 text-white flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-[#881337] to-[#be123c] text-white flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 shadow-xs">
                   <Icon className="w-4 h-4 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">

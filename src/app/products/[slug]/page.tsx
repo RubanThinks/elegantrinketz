@@ -2,8 +2,10 @@ import React from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Truck, ShieldCheck, RefreshCw, Sparkles } from "lucide-react";
+import { Truck, ShieldCheck, Sparkles } from "lucide-react";
+import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
 import { getProductBySlug, getRelatedProducts, toProductCardData } from "@/services/products";
+import { getDealOfTheDaySettings, isDealActive } from "@/services/storefront";
 import { Badge } from "@/components/ui/badge";
 import { JsonLd, getProductSchema, getBreadcrumbSchema } from "@/lib/seo/structured-data";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -64,11 +66,28 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     imageUrls.push("https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80");
   }
 
-  // Fetch related products
-  const related = await getRelatedProducts(product.id, product.categoryId, 4);
+  // Fetch related products & check if product is in an active Deal of the Day
+  const [related, dealSettings] = await Promise.all([
+    getRelatedProducts(product.id, product.categoryId, 4),
+    getDealOfTheDaySettings(),
+  ]);
+
+  const isDealRunning = isDealActive(dealSettings);
+  const activeDeal = isDealRunning
+    ? dealSettings.deals?.find((d) => d.productId === product.id)
+    : null;
+
+  const effectiveProduct: typeof product = activeDeal
+    ? {
+        ...product,
+        price: activeDeal.dealPrice,
+        compareAtPrice: activeDeal.originalPrice || product.price,
+      }
+    : product;
+
   const relatedCardData = related.map(toProductCardData);
 
-  const productSchema = getProductSchema(product);
+  const productSchema = getProductSchema(effectiveProduct);
 
   const breadcrumbItems = [
     { name: "Home", url: "/" },
@@ -180,7 +199,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             </div>
 
             {/* Interactive Actions (Pricing, Size Selector, Cart & WhatsApp Enquiry) */}
-            <ProductDetailActions product={product} />
+            <ProductDetailActions product={effectiveProduct} />
 
             {/* Description Details */}
             {product.description && (
@@ -221,7 +240,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   <span className="text-[11px] font-medium text-neutral-800">Fast India Delivery</span>
                 </div>
                 <div className="flex items-center space-x-2.5 p-2 rounded-lg bg-neutral-50/80 border border-neutral-100">
-                  <RefreshCw className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <WhatsAppIcon className="w-4 h-4 text-[#25D366] shrink-0" />
                   <span className="text-[11px] font-medium text-neutral-800">WhatsApp Support</span>
                 </div>
               </div>

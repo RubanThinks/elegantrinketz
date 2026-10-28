@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -10,34 +10,45 @@ import {
   Heart,
   User,
   Package,
-  Sparkles,
-  Flame,
+  Layers,
   ArrowRight,
+  Home,
 } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { useAuth } from "@/providers/auth-provider";
 import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
+import { getCategories } from "@/services/categories";
+import type { Category } from "@/types";
 
 interface MobileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-// Compact e-commerce category links
-const quickCategories = [
-  { label: "New Arrivals", href: "/shop/collection/new-arrivals", badge: "New", isHot: true },
-  { label: "Bestsellers", href: "/shop/collection/best-sellers", badge: "Trending", isHot: true },
-  { label: "Side Cut Kurtis", href: "/shop/side-cut-kurtis", badge: "Hot" },
-  { label: "Umbrella Kurtis", href: "/shop/umbrella-kurtis" },
-  { label: "3 Piece Sets", href: "/shop/three-piece-sets", badge: "Popular" },
-  { label: "Straight Pants", href: "/shop/straight-pants" },
-  { label: "Shimmer Leggings", href: "/shop/shimmer-leggings" },
-  { label: "Ethnic & Festive Wear", href: "/shop/ethnic-wear" },
-  { label: "Accessories & Trinketz", href: "/shop/accessories-trinketz" },
-];
-
 export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
   const { isAuthenticated, user, profile, logout } = useAuth();
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  // Fetch active categories defined by the admin
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCategories() {
+      try {
+        const fetched = await getCategories();
+        if (isMounted) {
+          setCategories(fetched || []);
+        }
+      } catch (err) {
+        console.error("Failed to load categories for mobile drawer:", err);
+      }
+    }
+    if (isOpen) {
+      loadCategories();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
 
   // Prevent background body scroll when open
   useEffect(() => {
@@ -83,21 +94,21 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
       {/* Drawer Body — Native Shopping App Drawer */}
       <div className="relative w-[85%] max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-300">
         <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col">
-          {/* Top User Card — Solid E-Commerce Mobile App Header */}
-          <div className="bg-neutral-950 text-white p-5 relative select-none">
+          {/* Top User Card — Luxury Boutique Drawer Header */}
+          <div className="bg-interlocked-triangles-luxury text-white p-5 relative select-none border-b border-amber-500/30">
             {/* Close Button */}
             <button
               type="button"
               onClick={onClose}
               aria-label="Close menu"
-              className="absolute top-4 right-4 p-1.5 rounded-full bg-neutral-800 hover:bg-neutral-700 text-white transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-full bg-rose-950/80 hover:bg-rose-900 text-amber-200 border border-amber-400/30 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             {/* Profile Greeting */}
             <div className="flex items-center gap-3 mt-1">
-              <div className="w-11 h-11 rounded-full p-[1px] bg-neutral-800 shrink-0 overflow-hidden">
+              <div className="w-11 h-11 rounded-full p-[2px] bg-gradient-to-tr from-amber-400 to-rose-400 shrink-0 overflow-hidden shadow-sm">
                 {isAuthenticated && user?.photoURL ? (
                   <Image
                     src={user.photoURL}
@@ -115,10 +126,10 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
               </div>
 
               <div className="flex-1 min-w-0 pr-6">
-                <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold font-flipkart">
+                <p className="text-[10px] uppercase tracking-wider text-rose-200/80 font-semibold font-flipkart">
                   {isAuthenticated ? "Welcome Back" : "Welcome"}
                 </p>
-                <h3 className="font-bold text-sm truncate font-flipkart">
+                <h3 className="font-bold text-sm truncate font-flipkart text-amber-200">
                   {isAuthenticated
                     ? profile?.displayName || user?.displayName || "Shopper"
                     : "Fashion Shopper"}
@@ -133,17 +144,17 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                   <Link
                     href="/account/orders"
                     onClick={onClose}
-                    className="flex-1 py-1.5 px-3 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors font-flipkart"
+                    className="flex-1 py-1.5 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors border border-white/10"
                   >
-                    <Package className="w-3.5 h-3.5" />
+                    <Package className="w-3.5 h-3.5 text-amber-300" />
                     <span>My Orders</span>
                   </Link>
                   <Link
                     href="/wishlist"
                     onClick={onClose}
-                    className="flex-1 py-1.5 px-3 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors font-flipkart"
+                    className="flex-1 py-1.5 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors border border-white/10"
                   >
-                    <Heart className="w-3.5 h-3.5" />
+                    <Heart className="w-3.5 h-3.5 text-rose-300" />
                     <span>Wishlist</span>
                   </Link>
                 </>
@@ -151,7 +162,7 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 <Link
                   href="/login"
                   onClick={onClose}
-                  className="w-full py-2 px-4 rounded-lg bg-[#ff9f00] text-neutral-950 hover:bg-[#f39700] text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all font-flipkart"
+                  className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 font-black uppercase tracking-wider text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-98 transition-all"
                 >
                   <span>Sign In / Register</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -160,60 +171,85 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
             </div>
           </div>
 
-          {/* Core Categories List (Simple, fast, no junk) */}
-          <div className="p-4 space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 px-3 py-1">
-              Shop Categories
+          {/* Primary Navigation Pill Buttons */}
+          <div className="p-4 space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 px-1">
+              Explore
             </p>
 
-            <div className="space-y-0.5">
-              {quickCategories.map((cat) => (
-                <Link
-                  key={cat.label}
-                  href={cat.href}
-                  onClick={onClose}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-neutral-800 hover:bg-rose-50 hover:text-rose-600 transition-colors group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    {cat.isHot ? (
-                      <span className="w-6 h-6 rounded-lg bg-rose-50 flex items-center justify-center text-rose-500">
-                        {cat.badge === "Trending" ? (
-                          <Flame className="w-3.5 h-3.5 fill-rose-500" />
-                        ) : (
-                          <Sparkles className="w-3.5 h-3.5" />
-                        )}
-                      </span>
-                    ) : (
-                      <span className="w-6 h-6 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-500 group-hover:bg-rose-100 group-hover:text-rose-600 transition-colors">
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                      </span>
-                    )}
-                    <span>{cat.label}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    {cat.badge && (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-100 text-rose-600 uppercase">
-                        {cat.badge}
-                      </span>
-                    )}
-                    <ChevronRight className="w-3.5 h-3.5 text-neutral-300 group-hover:text-rose-500 transition-colors" />
-                  </div>
-                </Link>
-              ))}
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/"
+                onClick={onClose}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-950 font-bold text-xs transition-colors shadow-xs"
+              >
+                <Home className="w-4 h-4 text-[#881337]" />
+                <span>Home</span>
+              </Link>
+              <Link
+                href="/shop"
+                onClick={onClose}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-950 font-bold text-xs transition-colors shadow-xs"
+              >
+                <ShoppingBag className="w-4 h-4 text-[#881337]" />
+                <span>Shop</span>
+              </Link>
+              <Link
+                href="/collections"
+                onClick={onClose}
+                className="col-span-2 flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-950 font-bold text-xs transition-colors shadow-xs"
+              >
+                <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-[#881337]" />
+                  <span>Collections</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-rose-400" />
+              </Link>
             </div>
           </div>
 
+          {/* Core Categories List (Strictly User-Listed Categories Only) */}
+          {categories.length > 0 && (
+            <div className="px-4 py-2 space-y-1.5 border-t border-rose-100">
+              <div className="flex items-center justify-between px-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                  Categories
+                </p>
+                <Link
+                  href="/shop"
+                  onClick={onClose}
+                  className="text-[10px] font-bold text-[#881337] hover:underline"
+                >
+                  View All
+                </Link>
+              </div>
+
+              <div className="space-y-1">
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id || cat.slug}
+                    href={`/shop/${cat.slug || cat.id}`}
+                    onClick={onClose}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-neutral-800 hover:bg-rose-50 hover:text-[#881337] border border-transparent hover:border-rose-200 transition-all group"
+                  >
+                    <span>{cat.name}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-neutral-300 group-hover:text-[#881337] transition-colors" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Quick Shortcuts */}
-          <div className="px-4 py-2 border-t border-rose-100/70 space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 px-3 py-1">
+          <div className="px-4 py-3 border-t border-rose-100/70 space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 px-1 py-1">
               Account & Help
             </p>
 
             <Link
               href="/account/orders"
               onClick={onClose}
-              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-neutral-700 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-neutral-700 hover:bg-rose-50 hover:text-rose-950 transition-colors"
             >
               <div className="flex items-center gap-2.5">
                 <Package className="w-4 h-4 text-neutral-400" />
@@ -225,7 +261,7 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
             <Link
               href="/wishlist"
               onClick={onClose}
-              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-neutral-700 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-neutral-700 hover:bg-rose-50 hover:text-rose-950 transition-colors"
             >
               <div className="flex items-center gap-2.5">
                 <Heart className="w-4 h-4 text-neutral-400" />
@@ -242,9 +278,9 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-neutral-900 text-white text-xs font-bold uppercase tracking-wider hover:bg-neutral-800 transition-all shadow-sm active:scale-98 font-flipkart"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#20BD5A] transition-all shadow-md active:scale-98"
           >
-            <WhatsAppIcon className="w-4 h-4 text-emerald-400" />
+            <WhatsAppIcon className="w-4 h-4 text-white" />
             <span>Customer Support Chat</span>
           </a>
 

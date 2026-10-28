@@ -15,6 +15,7 @@ import {
   Truck,
   RefreshCw,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
 import { Button } from "@/components/ui/button";
 import { AuthGuard } from "@/components/guards/auth-guard";
 import { useAuth } from "@/providers/auth-provider";
@@ -270,7 +271,7 @@ function OrdersContent() {
                   {/* Order Card Footer */}
                   <div className="bg-neutral-50/40 p-4 border-t border-neutral-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-neutral-500">
                     <p className="flex items-center gap-1.5">
-                      <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                      <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
                       <span>
                         Ordering & payment handled directly with our styling team on WhatsApp.
                       </span>

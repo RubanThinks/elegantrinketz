@@ -418,7 +418,7 @@ export function CartView() {
                 size="lg"
                 disabled={isValidating || items.length === 0}
                 onClick={handleProceedToCheckout}
-                className="w-full text-xs sm:text-sm uppercase tracking-wider font-semibold py-4 rounded-xl flex items-center justify-center gap-2.5 shadow-md bg-neutral-950 hover:bg-neutral-800 text-white transition-all focus:ring-2 focus:ring-neutral-950/40 cursor-pointer disabled:opacity-40"
+                className="w-full text-xs sm:text-sm uppercase tracking-wider font-semibold py-4 rounded-xl flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-[#881337] via-[#be123c] to-[#500724] hover:from-[#700f2b] hover:to-[#380413] text-white transition-all focus:ring-2 focus:ring-[#881337]/40 cursor-pointer disabled:opacity-40"
               >
                 {isValidating ? (
                   <>

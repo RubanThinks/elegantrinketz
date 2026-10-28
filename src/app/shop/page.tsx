@@ -13,9 +13,23 @@ export const metadata: Metadata = buildPageMetadata({
   path: "/shop",
 });
 
-export default async function ShopPage() {
+interface ShopPageProps {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function ShopPage({ searchParams }: ShopPageProps) {
+  const resolvedParams = searchParams ? await searchParams : {};
+  const maxPrice =
+    typeof resolvedParams.maxPrice === "string"
+      ? Number(resolvedParams.maxPrice)
+      : undefined;
+  const minPrice =
+    typeof resolvedParams.minPrice === "string"
+      ? Number(resolvedParams.minPrice)
+      : undefined;
+
   const [productsRes, categories] = await Promise.all([
-    getProducts({ limit: 60 }),
+    getProducts({ limit: 100 }),
     getCategories(),
   ]);
 
@@ -26,8 +40,14 @@ export default async function ShopPage() {
       categoryId: p.categoryId,
       categorySlug: p.categorySlug,
       createdAt: p.createdAt,
+      sizes: p.sizes || [],
     };
   });
+
+  const pageTitle =
+    typeof maxPrice === "number" && !isNaN(maxPrice)
+      ? `Products Under ₹${maxPrice}`
+      : "All Products";
 
   return (
     <div className="py-12 sm:py-16 bg-white">
@@ -36,19 +56,35 @@ export default async function ShopPage() {
         <div className="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-neutral-200 pb-4 mb-6 gap-2">
           <div>
             <nav className="text-[11px] font-medium text-neutral-500 mb-1">
-              <span>Home</span> <span className="mx-1">/</span> <span className="text-neutral-900 font-semibold">Shop</span>
+              <span>Home</span> <span className="mx-1">/</span>{" "}
+              <span className="text-neutral-900 font-semibold">Shop</span>
+              {typeof maxPrice === "number" && (
+                <>
+                  <span className="mx-1">/</span>
+                  <span className="text-[#881337] font-semibold">
+                    Under ₹{maxPrice}
+                  </span>
+                </>
+              )}
             </nav>
             <h1 className="text-xl sm:text-2xl font-bold text-neutral-950 tracking-tight font-flipkart">
-              All Products
+              {pageTitle}
             </h1>
           </div>
           <span className="text-xs font-semibold text-neutral-500">
-            Showing {allProducts.length} styles
+            {typeof maxPrice === "number"
+              ? `Filtered by budget: Under ₹${maxPrice}`
+              : `Showing ${allProducts.length} styles`}
           </span>
         </div>
 
         {/* Dynamic Shop Catalog with Filtering and Sorting */}
-        <ShopCatalog initialProducts={allProducts} categories={categories} />
+        <ShopCatalog
+          initialProducts={allProducts}
+          categories={categories}
+          initialMaxPrice={maxPrice}
+          initialMinPrice={minPrice}
+        />
       </div>
     </div>
   );

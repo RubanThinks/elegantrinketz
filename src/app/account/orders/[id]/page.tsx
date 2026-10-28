@@ -23,6 +23,7 @@ import {
   Sparkles,
   RefreshCw,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
 import { Button } from "@/components/ui/button";
 import { AuthGuard } from "@/components/guards/auth-guard";
 import { useAuth } from "@/providers/auth-provider";
@@ -208,9 +209,9 @@ function OrderDetailContent() {
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#25D366] hover:bg-[#1da851] text-white transition-colors cursor-pointer self-start sm:self-auto"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#25D366] hover:bg-[#1da851] text-white transition-colors cursor-pointer self-start sm:self-auto shadow-xs"
           >
-            <MessageCircle className="w-4 h-4 fill-white" />
+            <WhatsAppIcon className="w-4 h-4 text-white" />
             <span>Chat on WhatsApp</span>
           </a>
         </div>

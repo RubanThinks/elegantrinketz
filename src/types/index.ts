@@ -385,12 +385,46 @@ export interface HeroSlide {
   order: number;
 }
 
+export interface DealProductConfig {
+  productId: string;
+  productName?: string;
+  productImage?: string;
+  originalPrice: number;
+  dealPrice: number;
+  discountPercentage?: number;
+}
+
 export interface DealOfTheDaySettings {
   enabled: boolean;
   headline: string;
   subheadline: string;
   badgeText: string;
+  deals: DealProductConfig[];
   productIds: string[];
+  startsAt?: string;
   expiresAt: string; // ISO date/time string
+  updatedAt?: string;
+}
+
+export interface CuratedTileItem {
+  id: string;
+  title: string;
+  tagline: string;
+  priceText: string;
+  href: string;
+  imageUrl: string;
+  imagePublicId?: string;
+  badge: string;
+  order: number;
+  isActive: boolean;
+}
+
+export interface CuratedSectionSettings {
+  enabled: boolean;
+  eyebrow: string;
+  title: string;
+  buttonText: string;
+  buttonHref: string;
+  tiles: CuratedTileItem[];
   updatedAt?: string;
 }

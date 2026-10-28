@@ -57,7 +57,7 @@ export function ProductCarousel({ products, className }: ProductCarouselProps) {
         disabled={!canScrollLeft}
         aria-label="Scroll left"
         className={cn(
-          "hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white text-neutral-900 shadow-md border border-neutral-200 items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 hover:bg-neutral-50 disabled:opacity-0 disabled:pointer-events-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500",
+          "hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white text-[#881337] shadow-md border-2 border-rose-200 hover:border-[#881337] hover:bg-[#881337] hover:text-white items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-0 disabled:pointer-events-none cursor-pointer focus:outline-none",
           canScrollLeft ? "opacity-100" : "opacity-0"
         )}
       >
@@ -71,7 +71,7 @@ export function ProductCarousel({ products, className }: ProductCarouselProps) {
         disabled={!canScrollRight}
         aria-label="Scroll right"
         className={cn(
-          "hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white text-neutral-900 shadow-md border border-neutral-200 items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 hover:bg-neutral-50 disabled:opacity-0 disabled:pointer-events-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500",
+          "hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white text-[#881337] shadow-md border-2 border-rose-200 hover:border-[#881337] hover:bg-[#881337] hover:text-white items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-0 disabled:pointer-events-none cursor-pointer focus:outline-none",
           canScrollRight ? "opacity-100" : "opacity-0"
         )}
       >

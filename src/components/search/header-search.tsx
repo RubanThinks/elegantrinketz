@@ -4,23 +4,12 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, X, ArrowRight, Sparkles, ShoppingBag, FolderOpen, TrendingUp } from "lucide-react";
+import { Search, X, ArrowRight, Sparkles, ShoppingBag, Layers, TrendingUp } from "lucide-react";
 import { getProducts, toProductCardData } from "@/services/products";
 import { getCategories } from "@/services/categories";
 import type { Product, Category, ProductCardData } from "@/types";
 import { formatPrice } from "@/config/constants";
 import { cn } from "@/lib/utils";
-
-const TRENDING_KEYWORDS = [
-  "Side Cut Kurtis",
-  "Umbrella Kurtis",
-  "3 Piece Sets",
-  "Straight Pants",
-  "Shimmer Leggings",
-  "Kurtis",
-  "Festive Wear",
-  "Trinketz",
-];
 
 interface HeaderSearchProps {
   className?: string;
@@ -30,7 +19,7 @@ interface HeaderSearchProps {
 
 export function HeaderSearch({
   className,
-  placeholder = "Search side cut kurtis, 3 piece sets, shimmer leggings...",
+  placeholder = "Search for products, brands and more...",
   isMobile = false,
 }: HeaderSearchProps) {
   const router = useRouter();
@@ -44,7 +33,7 @@ export function HeaderSearch({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Lazy-load catalog data when the user focuses the search bar
+  // Load catalog data immediately so search suggestions are populated with real products
   const loadSearchData = async () => {
     if (hasLoadedData) return;
     try {
@@ -60,6 +49,10 @@ export function HeaderSearch({
     }
   };
 
+  useEffect(() => {
+    loadSearchData();
+  }, []);
+
   // Close dropdown on outside click
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -74,42 +67,31 @@ export function HeaderSearch({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  // Compute suggestions based on query
+  // Compute suggestions based strictly on products posted in the catalog
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
+
+    // Only consider published real products
+    const availableProducts = products.filter(
+      (p) => p.name && p.status !== "draft"
+    );
+
     if (!q) {
+      // Top product names currently in store (e.g. up to 6 products)
+      const topKeywords = availableProducts.slice(0, 6).map((p) => p.name);
       return {
-        keywords: TRENDING_KEYWORDS,
+        keywords: topKeywords,
         matchingCategories: categories.slice(0, 4),
-        matchingProducts: products.slice(0, 3).map(toProductCardData),
+        matchingProducts: availableProducts.slice(0, 3).map(toProductCardData),
         isTrending: true,
       };
     }
 
-    // 1. Keyword suggestions derived from product names, tags, categories
-    const keywordSet = new Set<string>();
-
-    // Add query-matching trending keywords
-    TRENDING_KEYWORDS.forEach((kw) => {
-      if (kw.toLowerCase().includes(q)) {
-        keywordSet.add(kw);
-      }
-    });
-
-    // Extract relevant phrases or tokens from products
-    products.forEach((p) => {
-      const name = p.name;
-      if (name.toLowerCase().includes(q)) {
-        keywordSet.add(name);
-      }
-      p.tags?.forEach((t) => {
-        if (t.toLowerCase().includes(q)) {
-          keywordSet.add(t);
-        }
-      });
-    });
-
-    const keywords = Array.from(keywordSet).slice(0, 5);
+    // 1. Keyword suggestions derived strictly from actual products in store
+    const matchedNames = availableProducts
+      .filter((p) => p.name.toLowerCase().includes(q))
+      .slice(0, 6)
+      .map((p) => p.name);
 
     // 2. Matching Categories
     const matchingCategories = categories
@@ -120,8 +102,8 @@ export function HeaderSearch({
       )
       .slice(0, 3);
 
-    // 3. Matching Products
-    const matchingProducts = products
+    // 3. Matching Products Preview
+    const matchingProducts = availableProducts
       .filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
@@ -134,7 +116,7 @@ export function HeaderSearch({
       .map(toProductCardData);
 
     return {
-      keywords,
+      keywords: matchedNames,
       matchingCategories,
       matchingProducts,
       isTrending: false,
@@ -299,7 +281,7 @@ export function HeaderSearch({
                     onClick={() => setIsOpen(false)}
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-rose-200/80 text-rose-700 hover:bg-rose-50 text-[11px] font-medium transition-colors shadow-2xs"
                   >
-                    <FolderOpen className="w-3 h-3 text-rose-500" />
+                    <Sparkles className="w-3 h-3 text-[#881337]" />
                     <span>{cat.name}</span>
                   </Link>
                 ))}

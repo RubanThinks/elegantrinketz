@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/providers/wishlist-provider";
 import { useCart } from "@/providers/cart-provider";
 import { OnlineCheckoutModal } from "@/components/cart/online-checkout-modal";
+import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
@@ -228,9 +229,9 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
                   className={cn(
                     "relative px-4 py-2.5 text-xs font-semibold rounded-lg border transition-all duration-200 cursor-pointer select-none",
                     inStock && !isSelected &&
-                      "bg-white border-neutral-300 text-neutral-800 hover:border-neutral-900 hover:bg-neutral-50",
+                      "bg-white border-rose-200 text-neutral-800 hover:border-[#881337] hover:bg-rose-50/50",
                     inStock && isSelected &&
-                      "bg-neutral-900 border-neutral-900 text-white shadow-sm ring-2 ring-neutral-900/20",
+                      "bg-[#881337] border-[#881337] text-white shadow-sm ring-2 ring-[#881337]/20 font-bold",
                     !inStock &&
                       "bg-neutral-100 border-neutral-200 text-neutral-400 cursor-not-allowed line-through opacity-70"
                   )}
@@ -330,6 +331,7 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-700 hover:text-rose-900 underline pt-0.5"
           >
+            <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366] shrink-0" />
             <span>Enquire for Restock on WhatsApp</span>
             <ArrowRight className="w-3 h-3" />
           </a>

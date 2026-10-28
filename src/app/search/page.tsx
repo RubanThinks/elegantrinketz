@@ -2,24 +2,13 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search as SearchIcon, X, Sparkles, FolderOpen, ArrowRight } from "lucide-react";
+import { Search as SearchIcon, X, Sparkles, ShoppingBag, ArrowRight } from "lucide-react";
 import { getProducts, toProductCardData } from "@/services/products";
 import { getCategories } from "@/services/categories";
 import type { Product, Category } from "@/types";
 import { ProductGrid } from "@/components/product/product-grid";
 import { EmptyState } from "@/components/common/empty-state";
 import Link from "next/link";
-
-const POPULAR_SEARCH_TAGS = [
-  "Side Cut Kurtis",
-  "Umbrella Kurtis",
-  "3 Piece Sets",
-  "Straight Pants",
-  "Shimmer Leggings",
-  "Kurtis",
-  "Festive Wear",
-  "Trinketz",
-];
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -58,10 +47,19 @@ function SearchContent() {
     loadData();
   }, []);
 
+  const availableProducts = useMemo(() => {
+    return products.filter((p) => p.name && p.status !== "draft");
+  }, [products]);
+
+  // Derive popular search tags strictly from actual products posted by the user
+  const popularSearches = useMemo(() => {
+    return availableProducts.slice(0, 6).map((p) => p.name);
+  }, [availableProducts]);
+
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
-    return products
+    return availableProducts
       .filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
@@ -72,32 +70,22 @@ function SearchContent() {
           p.tags?.some((t) => t.toLowerCase().includes(q))
       )
       .map(toProductCardData);
-  }, [query, products]);
+  }, [query, availableProducts]);
 
   // Featured suggestions when no query is typed
   const trendingProducts = useMemo(() => {
-    return products.slice(0, 4).map(toProductCardData);
-  }, [products]);
+    return availableProducts.slice(0, 4).map(toProductCardData);
+  }, [availableProducts]);
 
-  // Auto-suggestion keywords matching current query
+  // Auto-suggestion keywords matching current query derived strictly from posted products
   const querySuggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
-    const set = new Set<string>();
-
-    POPULAR_SEARCH_TAGS.forEach((tag) => {
-      if (tag.toLowerCase().includes(q)) set.add(tag);
-    });
-
-    products.forEach((p) => {
-      if (p.name.toLowerCase().includes(q)) set.add(p.name);
-      p.tags?.forEach((t) => {
-        if (t.toLowerCase().includes(q)) set.add(t);
-      });
-    });
-
-    return Array.from(set).slice(0, 6);
-  }, [query, products]);
+    return availableProducts
+      .filter((p) => p.name.toLowerCase().includes(q))
+      .slice(0, 6)
+      .map((p) => p.name);
+  }, [query, availableProducts]);
 
   const matchingCategories = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -118,7 +106,7 @@ function SearchContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Search Header & Input Box (Amazon & Flipkart Style) */}
         <div className="max-w-2xl mx-auto text-center space-y-5 mb-10">
-          <span className="text-[11px] font-editorial-subheading text-neutral-400">
+          <span className="text-[11px] font-editorial-subheading text-[#881337] uppercase tracking-wider font-semibold">
             Catalog Search
           </span>
           <h1 className="text-2xl sm:text-4xl font-serif text-neutral-900 tracking-tight">
@@ -144,8 +132,8 @@ function SearchContent() {
                     setShowSuggestions(false);
                   }
                 }}
-                placeholder="Search for kurtis, gowns, frocks, sarees, trinketz..."
-                className="w-full pl-12 pr-12 py-3.5 bg-white border border-neutral-300 rounded-2xl text-sm sm:text-base text-neutral-900 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 placeholder:text-neutral-400 transition-all shadow-xs"
+                placeholder="Search for products, brands and more..."
+                className="w-full pl-12 pr-12 py-3.5 bg-white border border-neutral-300 rounded-2xl text-sm sm:text-base text-neutral-900 focus:outline-none focus:border-[#881337] focus:ring-2 focus:ring-[#881337]/20 placeholder:text-neutral-400 transition-all shadow-xs"
                 autoFocus
               />
               {query && (
@@ -173,7 +161,7 @@ function SearchContent() {
                       key={idx}
                       type="button"
                       onClick={() => handleSelectQuery(item)}
-                      className="w-full px-4 py-2.5 text-left text-xs sm:text-sm text-neutral-700 hover:bg-rose-50 hover:text-rose-700 flex items-center justify-between transition-colors"
+                      className="w-full px-4 py-2.5 text-left text-xs sm:text-sm text-neutral-700 hover:bg-rose-50 hover:text-[#881337] flex items-center justify-between transition-colors"
                     >
                       <div className="flex items-center gap-2.5 truncate">
                         <SearchIcon className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
@@ -194,9 +182,9 @@ function SearchContent() {
                         <Link
                           key={c.id}
                           href={`/shop/${c.slug}`}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-rose-200 text-rose-700 text-xs font-medium hover:bg-rose-50"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-rose-200 text-[#881337] text-xs font-medium hover:bg-rose-50"
                         >
-                          <FolderOpen className="w-3 h-3 text-rose-500" />
+                          <Sparkles className="w-3 h-3 text-[#881337]" />
                           <span>{c.name}</span>
                         </Link>
                       ))}
@@ -207,20 +195,22 @@ function SearchContent() {
             )}
           </div>
 
-          {/* Quick Suggestion Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-neutral-500 pt-1">
-            <span className="text-neutral-400 text-[11px] font-medium">Popular:</span>
-            {POPULAR_SEARCH_TAGS.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => handleSelectQuery(tag)}
-                className="px-3 py-1 bg-white border border-neutral-200 hover:border-rose-400 hover:text-rose-600 text-neutral-700 rounded-full transition-colors text-[11px] cursor-pointer shadow-2xs active:scale-95"
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
+          {/* Quick Suggestion Pills strictly from store products */}
+          {popularSearches.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-neutral-500 pt-1">
+              <span className="text-neutral-400 text-[11px] font-medium">Trending:</span>
+              {popularSearches.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => handleSelectQuery(tag)}
+                  className="px-3 py-1 bg-white border border-neutral-200 hover:border-[#881337] hover:text-[#881337] text-neutral-700 rounded-full transition-colors text-[11px] cursor-pointer shadow-2xs active:scale-95"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Results / Empty states */}
@@ -229,7 +219,7 @@ function SearchContent() {
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-2 border-b border-neutral-200/70">
                 <p className="text-xs uppercase tracking-wider text-neutral-500 font-medium">
-                  Found <span className="font-bold text-neutral-900">{searchResults.length}</span> {searchResults.length === 1 ? "design" : "designs"} for &ldquo;{query}&rdquo;
+                  Found <span className="font-bold text-neutral-900">{searchResults.length}</span> {searchResults.length === 1 ? "creation" : "creations"} for &ldquo;{query}&rdquo;
                 </p>
                 <button
                   type="button"
@@ -237,7 +227,7 @@ function SearchContent() {
                     setQuery("");
                     router.replace("/search");
                   }}
-                  className="text-xs text-rose-600 hover:text-rose-700 font-semibold"
+                  className="text-xs text-[#881337] hover:underline font-semibold"
                 >
                   Clear Results
                 </button>
@@ -257,7 +247,7 @@ function SearchContent() {
           <div className="space-y-8">
             {isLoading ? (
               <div className="py-12 flex flex-col items-center justify-center space-y-3">
-                <div className="w-6 h-6 border-2 border-neutral-300 border-t-rose-600 rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-neutral-300 border-t-[#881337] rounded-full animate-spin" />
                 <p className="text-xs uppercase tracking-wider text-neutral-400">
                   Loading Catalogue...
                 </p>
@@ -283,7 +273,7 @@ export default function SearchPage() {
     <Suspense
       fallback={
         <div className="py-16 flex flex-col items-center justify-center space-y-3">
-          <div className="w-6 h-6 border-2 border-neutral-300 border-t-rose-600 rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-neutral-300 border-t-[#881337] rounded-full animate-spin" />
           <p className="text-xs uppercase tracking-wider text-neutral-400">Loading Search...</p>
         </div>
       }

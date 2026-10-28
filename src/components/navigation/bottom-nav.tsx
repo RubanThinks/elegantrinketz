@@ -102,16 +102,16 @@ export function BottomNav() {
         >
           <div
             className={cn(
-              "w-11 h-11 rounded-full bg-neutral-950 text-white shadow-sm flex items-center justify-center border-2 border-white",
-              isShopActive && "ring-2 ring-neutral-950"
+              "w-11 h-11 rounded-full bg-gradient-to-tr from-[#881337] to-[#e11d48] text-white shadow-md flex items-center justify-center border-2 border-white",
+              isShopActive && "ring-2 ring-amber-400"
             )}
           >
             <Store className="w-5 h-5 text-white stroke-[2]" />
           </div>
           <span
             className={cn(
-              "text-[10px] font-bold tracking-tight mt-0.5 transition-colors font-flipkart",
-              isShopActive ? "text-neutral-950" : "text-neutral-700"
+              "text-[10px] font-bold tracking-tight mt-0.5 transition-colors font-sans",
+              isShopActive ? "text-[#881337]" : "text-neutral-700"
             )}
           >
             Shop

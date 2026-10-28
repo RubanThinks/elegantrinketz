@@ -13,7 +13,7 @@ export const buttonVariants = cva(
         primary:
           "bg-rose-600 text-white hover:bg-rose-700 shadow-sm hover:shadow-md",
         secondary:
-          "bg-neutral-900 text-white hover:bg-neutral-800 shadow-sm",
+          "bg-[#881337] text-white hover:bg-[#700f2b] shadow-sm",
         outline:
           "border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50 hover:border-neutral-400",
         ghost:

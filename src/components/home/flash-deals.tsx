@@ -24,10 +24,10 @@ export function FlashDeals({ products, initialSettings }: FlashDealsProps) {
     seconds: number;
     isExpired: boolean;
   }>({
-    hours: 8,
+    hours: 0,
     minutes: 0,
     seconds: 0,
-    isExpired: false,
+    isExpired: !initialSettings?.expiresAt || new Date(initialSettings.expiresAt).getTime() <= Date.now(),
   });
 
   // Load latest admin configuration if not supplied or on mount
@@ -43,14 +43,19 @@ export function FlashDeals({ products, initialSettings }: FlashDealsProps) {
     };
   }, []);
 
-  // Compute live countdown to admin-configured expiration (e.g. 12:00 PM or midnight)
+  // Compute live countdown to admin-configured expiration
   useEffect(() => {
+    if (!dealConfig.expiresAt) {
+      setTimeLeft({ hours: 0, minutes: 0, seconds: 0, isExpired: true });
+      return;
+    }
+
     const calculateRemaining = () => {
       const expiry = new Date(dealConfig.expiresAt).getTime();
       const now = Date.now();
       const diff = expiry - now;
 
-      if (diff <= 0) {
+      if (isNaN(expiry) || diff <= 0) {
         setTimeLeft({ hours: 0, minutes: 0, seconds: 0, isExpired: true });
         return;
       }
@@ -68,30 +73,26 @@ export function FlashDeals({ products, initialSettings }: FlashDealsProps) {
     return () => clearInterval(interval);
   }, [dealConfig.expiresAt]);
 
-  // Resolve products: filter by admin-selected productIds if present, or fallback to top products
+  // Resolve products: strictly display the products assigned by the admin to this deal
   const displayProducts = useMemo(() => {
-    if (!products || products.length === 0) return [];
+    if (!products || products.length === 0 || !dealConfig.enabled) return [];
 
-    if (dealConfig.productIds && dealConfig.productIds.length > 0) {
-      const selected = products.filter((p) =>
-        dealConfig.productIds.includes(p.id)
-      );
-      if (selected.length > 0) {
-        // If selected is less than 4, pad with other products
-        if (selected.length < 4) {
-          const remaining = products.filter(
-            (p) => !dealConfig.productIds.includes(p.id)
-          );
-          return [...selected, ...remaining].slice(0, 4);
-        }
-        return selected.slice(0, 4);
-      }
+    if (dealConfig.deals && dealConfig.deals.length > 0) {
+      const dealIds = dealConfig.deals.map((d) => d.productId);
+      return products.filter((p) => dealIds.includes(p.id));
     }
 
-    return products.slice(0, 4);
-  }, [products, dealConfig.productIds]);
+    if (dealConfig.productIds && dealConfig.productIds.length > 0) {
+      return products.filter((p) => dealConfig.productIds.includes(p.id));
+    }
 
-  if (!dealConfig.enabled || displayProducts.length === 0) return null;
+    return [];
+  }, [products, dealConfig.deals, dealConfig.productIds, dealConfig.enabled]);
+
+  // If deal is disabled, expired, or has no assigned products, render absolutely nothing
+  if (!dealConfig.enabled || timeLeft.isExpired || displayProducts.length === 0) {
+    return null;
+  }
 
   const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -112,14 +113,14 @@ export function FlashDeals({ products, initialSettings }: FlashDealsProps) {
 
           <div className="flex items-center gap-4">
             {/* Live Countdown Timer */}
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-700 bg-neutral-100 px-3 py-1.5 rounded-lg border border-neutral-200">
-              <Clock className="w-3.5 h-3.5 text-red-600 animate-pulse" />
-              <span className="text-neutral-500 font-medium">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-950 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 shadow-xs">
+              <Clock className="w-3.5 h-3.5 text-[#881337] animate-pulse" />
+              <span className="text-rose-700 font-medium">
                 {timeLeft.isExpired ? "Status:" : "Ends in:"}
               </span>
-              <span className="font-mono font-bold text-neutral-950">
+              <span className="font-mono font-bold text-[#881337]">
                 {timeLeft.isExpired ? (
-                  <span className="text-red-600">Refreshes Soon</span>
+                  <span className="text-rose-600">Refreshes Soon</span>
                 ) : (
                   `${pad(timeLeft.hours)}h : ${pad(timeLeft.minutes)}m : ${pad(timeLeft.seconds)}s`
                 )}
@@ -128,7 +129,7 @@ export function FlashDeals({ products, initialSettings }: FlashDealsProps) {
 
             <Link
               href="/shop?sort=discount_desc"
-              className="hidden sm:inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-neutral-900 hover:text-red-600 transition-colors"
+              className="hidden sm:inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-50 to-rose-50 hover:bg-amber-100 border border-amber-300 text-xs font-bold uppercase tracking-wider text-[#881337] transition-all shadow-xs"
             >
               <span>View All Deals</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -147,7 +148,7 @@ export function FlashDeals({ products, initialSettings }: FlashDealsProps) {
         <div className="mt-6 text-center sm:hidden">
           <Link
             href="/shop?sort=discount_desc"
-            className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 bg-neutral-900 text-white rounded-lg text-xs font-bold uppercase tracking-wider"
+            className="inline-flex items-center justify-center gap-1.5 w-full py-3 bg-gradient-to-r from-[#881337] to-[#4c0519] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md active:scale-98"
           >
             <span>Explore All Deals</span>
             <ArrowRight className="w-3.5 h-3.5" />

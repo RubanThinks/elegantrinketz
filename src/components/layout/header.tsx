@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Search, Heart, ShoppingCart, User, Menu } from "lucide-react";
+import { Search, Heart, ShoppingCart, User, Menu, ChevronDown } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { mainNavigation } from "@/config/navigation";
 import { MobileDrawer } from "@/components/navigation/mobile-drawer";
@@ -13,6 +13,8 @@ import { useAuth } from "@/providers/auth-provider";
 import { useWishlist } from "@/providers/wishlist-provider";
 import { useCart } from "@/providers/cart-provider";
 import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
+import { getCategories } from "@/services/categories";
+import type { Category } from "@/types";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -21,7 +23,20 @@ export function Header() {
   const { itemCount } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
   const pathname = usePathname();
+
+  useEffect(() => {
+    let active = true;
+    getCategories().then((res) => {
+      if (active && res) {
+        setCategories(res);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -98,54 +113,53 @@ export function Header() {
               </Link>
             </div>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center space-x-6">
+            {/* Desktop Navigation Links — Luxury Boutique Pill Buttons */}
+            <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2">
               {mainNavigation.map((item) => {
                 const isActive =
                   item.href === "/"
                     ? pathname === "/"
-                    : pathname.startsWith(item.href);
+                    : pathname === item.href || (item.href !== "/shop" && pathname.startsWith(item.href));
 
-                const isDeal = item.label.includes("Deals");
+                const isProducts = item.label === "Products";
+                // Only build dropdown items if categories are actually listed by the user
+                const dropdownCategories = isProducts && categories.length > 0 ? categories : [];
+                const hasDropdown = dropdownCategories.length > 0;
 
                 return (
                   <div key={item.label} className="relative group">
                     <Link
                       href={item.href}
                       className={cn(
-                        "text-xs uppercase tracking-wider font-bold py-1.5 transition-colors relative flex items-center gap-1",
-                        isDeal
-                          ? "text-red-600 font-extrabold"
-                          : isActive
-                          ? "text-neutral-950"
-                          : "text-neutral-700 hover:text-neutral-950"
+                        "inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl border transition-all duration-200 cursor-pointer shadow-xs select-none tracking-normal font-sans",
+                        isActive
+                          ? "bg-gradient-to-r from-[#881337] to-[#500724] text-white border-[#881337] shadow-sm scale-102"
+                          : "bg-rose-50/70 text-rose-950 border-rose-200/80 hover:bg-rose-100 hover:border-rose-300 hover:text-[#881337]"
                       )}
                     >
-                      {item.label}
-                      {isDeal && (
-                        <span className="px-1.5 py-0.2 rounded text-[9px] bg-red-600 text-white font-extrabold tracking-normal">
-                          HOT
-                        </span>
+                      <span>{item.label}</span>
+                      {hasDropdown && (
+                        <ChevronDown className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform duration-200" />
                       )}
-                      <span
-                        className={cn(
-                          "absolute left-0 -bottom-0.5 w-full h-[2px] bg-neutral-950 transition-transform duration-200 origin-left",
-                          isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                        )}
-                      />
                     </Link>
 
-                    {/* Desktop Dropdown Menu if children present */}
-                    {item.children && (
-                      <div className="absolute left-0 top-full pt-2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-150 z-50">
-                        <div className="bg-white border border-neutral-200 rounded-xl shadow-lg py-1.5 min-w-[200px]">
-                          {item.children.map((sub) => (
+                    {/* Dynamic Dropdown for Products: Only user-defined categories */}
+                    {hasDropdown && (
+                      <div className="absolute left-0 top-full pt-2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
+                        <div className="bg-white border-2 border-rose-200/90 rounded-2xl shadow-xl py-2 min-w-[220px] overflow-hidden">
+                          <Link
+                            href="/shop"
+                            className="block px-4 py-2.5 text-xs font-bold text-[#881337] hover:bg-rose-50 border-b border-rose-100/70 transition-colors"
+                          >
+                            All Products
+                          </Link>
+                          {dropdownCategories.map((cat) => (
                             <Link
-                              key={sub.label}
-                              href={sub.href}
-                              className="block px-4 py-2 text-xs font-semibold text-neutral-700 hover:text-neutral-950 hover:bg-neutral-50 transition-colors"
+                              key={cat.id || cat.slug}
+                              href={`/shop/${cat.slug || cat.id}`}
+                              className="block px-4 py-2.5 text-xs font-semibold text-neutral-800 hover:text-white hover:bg-gradient-to-r hover:from-[#881337] hover:to-[#be123c] transition-colors"
                             >
-                              {sub.label}
+                              {cat.name}
                             </Link>
                           ))}
                         </div>
@@ -172,7 +186,7 @@ export function Header() {
 
               {/* Desktop Header Search Bar (Amazon & Flipkart style) */}
               <div className="hidden lg:block w-56 xl:w-72">
-                <HeaderSearch placeholder="Search kurtis, 3-piece sets, pants..." />
+                <HeaderSearch placeholder="Search for products, brands and more..." />
               </div>
 
               {/* Account (desktop) */}
@@ -229,7 +243,7 @@ export function Header() {
 
           {/* Mobile Live Search Bar (Amazon & Flipkart style with real-time auto-suggestions) */}
           <div className="mt-2.5 lg:hidden">
-            <HeaderSearch isMobile placeholder="Search kurtis, frocks, gowns, trinketz..." />
+            <HeaderSearch isMobile placeholder="Search for products, brands and more..." />
           </div>
         </div>
       </header>

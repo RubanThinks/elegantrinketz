@@ -23,16 +23,16 @@ function AdminShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50/60 flex flex-col">
-      {/* Admin Top Navigation — Clean White & Rose Theme */}
-      <header className="sticky top-0 z-30 bg-white border-b border-neutral-200/80 px-4 sm:px-6 py-2.5 flex items-center justify-between shadow-2xs">
+    <div className="min-h-screen bg-neutral-100 flex flex-col">
+      {/* Admin Top Navigation — Solid White & Charcoal Theme */}
+      <header className="sticky top-0 z-30 bg-white border-b border-neutral-200 px-4 sm:px-6 py-2.5 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           {/* Mobile Admin Hamburger Toggle */}
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(true)}
             aria-label="Toggle Admin Menu"
-            className="md:hidden p-2 -ml-2 text-neutral-700 hover:text-rose-600 rounded-lg hover:bg-neutral-100 transition-colors"
+            className="md:hidden p-2 -ml-2 text-neutral-700 hover:text-neutral-900 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -41,7 +41,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
             href="/admin"
             className="flex items-center gap-2.5 text-sm font-semibold tracking-wide text-neutral-900 group"
           >
-            <div className="relative w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-tr from-rose-500 to-pink-500 shadow-xs shrink-0">
+            <div className="relative w-8 h-8 rounded-full p-[1.5px] bg-rose-600 shadow-sm shrink-0">
               <div className="w-full h-full rounded-full overflow-hidden bg-white p-[1px] flex items-center justify-center">
                 <Image
                   src={siteConfig.logo}
@@ -56,7 +56,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
               <span className="font-serif italic font-bold text-neutral-900">
                 {siteConfig.name}
               </span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-100 text-rose-700 uppercase tracking-wider">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-neutral-900 text-white uppercase tracking-wider shadow-xs">
                 Admin
               </span>
             </div>
@@ -65,21 +65,21 @@ function AdminShell({ children }: { children: React.ReactNode }) {
 
         <div className="flex items-center space-x-3 text-xs">
           {user?.email && (
-            <span className="text-neutral-500 hidden sm:inline max-w-[180px] truncate">
+            <span className="text-neutral-600 hidden sm:inline max-w-[180px] truncate font-medium">
               {user.email}
             </span>
           )}
           <Link
             href="/"
             target="_blank"
-            className="text-neutral-600 hover:text-rose-600 flex items-center gap-1 transition-colors px-2 py-1 rounded-md hover:bg-neutral-100"
+            className="text-neutral-700 hover:text-neutral-950 flex items-center gap-1 transition-colors px-2.5 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 shadow-xs font-semibold"
           >
             <span className="hidden xs:inline">Storefront</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </Link>
           <button
             onClick={handleLogout}
-            className="text-neutral-500 hover:text-rose-600 flex items-center gap-1 transition-colors cursor-pointer px-2 py-1 rounded-md hover:bg-neutral-100"
+            className="text-neutral-700 hover:text-red-600 flex items-center gap-1 transition-colors cursor-pointer px-2.5 py-1.5 rounded-lg bg-neutral-100 hover:bg-red-50 shadow-xs font-semibold"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Sign Out</span>
@@ -87,8 +87,8 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Mobile Admin Horizontal Quick Tabs (Clean 1-line navigation) */}
-      <div className="md:hidden bg-white border-b border-neutral-200/80 px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      {/* Mobile Admin Horizontal Quick Tabs */}
+      <div className="md:hidden bg-white border-b border-neutral-200 px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar shadow-xs">
         {adminNavigation.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -97,10 +97,10 @@ function AdminShell({ children }: { children: React.ReactNode }) {
               key={item.label}
               href={item.href}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-colors",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 transition-colors",
                 isActive
-                  ? "bg-rose-600 text-white shadow-2xs"
-                  : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+                  ? "bg-rose-600 text-white shadow-sm"
+                  : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 shadow-xs"
               )}
             >
               {Icon && <Icon className="w-3.5 h-3.5" />}
@@ -142,15 +142,15 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                       href={item.href}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={cn(
-                        "flex items-center space-x-3 px-3.5 py-2.5 text-xs font-semibold rounded-xl transition-colors",
+                        "flex items-center space-x-3 px-3.5 py-2.5 text-xs font-semibold rounded-lg transition-colors",
                         isActive
-                          ? "bg-rose-50 text-rose-700 border border-rose-200"
-                          : "text-neutral-700 hover:bg-neutral-100"
+                          ? "bg-rose-600 text-white shadow-sm font-bold"
+                          : "text-neutral-700 hover:bg-neutral-100 font-medium"
                       )}
                     >
                       {Icon && (
                         <Icon
-                          className={cn("w-4 h-4", isActive ? "text-rose-600" : "text-neutral-400")}
+                          className={cn("w-4 h-4", isActive ? "text-white" : "text-neutral-500")}
                         />
                       )}
                       <span>{item.label}</span>
@@ -164,7 +164,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Log Out of Admin</span>
@@ -177,11 +177,11 @@ function AdminShell({ children }: { children: React.ReactNode }) {
       {/* Admin Body with Desktop-Only Sidebar */}
       <div className="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 sm:p-6 gap-6">
         {/* Desktop Sidebar Navigation (Hidden on mobile) */}
-        <aside className="hidden md:block w-56 shrink-0 bg-white border border-neutral-200/80 rounded-2xl p-4 space-y-1 self-start shadow-2xs">
-          <p className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold px-3 py-2">
+        <aside className="hidden md:block w-56 shrink-0 bg-white border border-neutral-200 rounded-xl p-3.5 space-y-1 self-start shadow-sm">
+          <p className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold px-3 py-2">
             Operations
           </p>
-          <nav className="space-y-0.5">
+          <nav className="space-y-1">
             {adminNavigation.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -190,17 +190,17 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                   key={item.label}
                   href={item.href}
                   className={cn(
-                    "flex items-center space-x-2.5 px-3 py-2 text-xs font-semibold rounded-xl transition-colors",
+                    "flex items-center space-x-2.5 px-3 py-2 text-xs font-semibold rounded-lg transition-colors",
                     isActive
-                      ? "text-rose-700 bg-rose-50 border border-rose-100"
-                      : "text-neutral-700 hover:text-neutral-950 hover:bg-neutral-50"
+                      ? "bg-rose-600 text-white shadow-sm font-bold"
+                      : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 font-medium"
                   )}
                 >
                   {Icon && (
                     <Icon
                       className={cn(
                         "w-4 h-4 shrink-0",
-                        isActive ? "text-rose-600" : "text-neutral-400"
+                        isActive ? "text-white" : "text-neutral-500"
                       )}
                     />
                   )}
@@ -212,7 +212,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 bg-white border border-neutral-200/80 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-2xs">
+        <main className="flex-1 bg-white border border-neutral-200 rounded-xl p-5 sm:p-7 shadow-sm">
           {children}
         </main>
       </div>

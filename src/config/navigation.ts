@@ -32,37 +32,20 @@ export interface NavItem {
 
 export const mainNavigation: NavItem[] = [
   {
-    label: "Kurtis",
-    href: "/shop?category=kurtis",
-    children: [
-      { label: "All Kurtis", href: "/shop" },
-      { label: "Side Cut Kurtis", href: "/shop/side-cut-kurtis" },
-      { label: "Umbrella Kurtis", href: "/shop/umbrella-kurtis" },
-    ],
+    label: "Home",
+    href: "/",
   },
   {
-    label: "3-Piece Sets",
-    href: "/shop/three-piece-sets",
+    label: "Shop",
+    href: "/shop",
   },
   {
-    label: "Bottomwear",
-    href: "/shop?category=bottomwear",
-    children: [
-      { label: "Straight Pants", href: "/shop/straight-pants" },
-      { label: "Shimmer Leggings", href: "/shop/shimmer-leggings" },
-    ],
+    label: "Products",
+    href: "/shop",
   },
   {
-    label: "New Arrivals",
-    href: "/shop/collection/new-arrivals",
-  },
-  {
-    label: "Best Sellers",
-    href: "/shop/collection/best-sellers",
-  },
-  {
-    label: "Deals & Offers",
-    href: "/shop?sort=price_asc",
+    label: "Collections",
+    href: "/collections",
   },
 ];
 

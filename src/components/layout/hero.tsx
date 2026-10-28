@@ -48,8 +48,8 @@ export function Hero({ initialSlides }: HeroProps) {
   const slide = slides[validIndex];
 
   return (
-    <section className="relative w-full overflow-hidden bg-neutral-950 text-white min-h-[440px] sm:min-h-[500px] lg:min-h-[540px] flex items-center isolate">
-      {/* Background Banner with Dark High-Contrast Gradient */}
+    <section className="relative w-full overflow-hidden bg-interlocked-triangles-luxury text-white min-h-[440px] sm:min-h-[500px] lg:min-h-[540px] flex items-center isolate border-b border-amber-500/20">
+      {/* Background Banner with Pink & Warm Gold High-Contrast Gradient */}
       <div className="absolute inset-0 z-0">
         <Image
           src={slide.imageUrl}
@@ -59,7 +59,7 @@ export function Hero({ initialSlides }: HeroProps) {
           sizes="100vw"
           className="object-cover object-[center_top] sm:object-[center_25%] transition-opacity duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/95 via-neutral-950/70 to-neutral-950/30 sm:from-neutral-950/95 sm:via-neutral-950/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#4c0519]/95 via-[#4c0519]/80 to-transparent sm:from-[#4c0519]/95 sm:via-[#4c0519]/75" />
       </div>
 
       {/* Main Content Container */}
@@ -126,7 +126,7 @@ export function Hero({ initialSlides }: HeroProps) {
               setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
             }
             aria-label="Previous Offer Slide"
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-neutral-900 hover:bg-neutral-950 text-white flex items-center justify-center border border-neutral-700 transition-all cursor-pointer hidden sm:flex shadow-sm"
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-rose-950/80 hover:bg-rose-900 text-amber-300 flex items-center justify-center border border-amber-400/40 transition-all cursor-pointer hidden sm:flex shadow-md"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -135,7 +135,7 @@ export function Hero({ initialSlides }: HeroProps) {
             type="button"
             onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
             aria-label="Next Offer Slide"
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-neutral-900 hover:bg-neutral-950 text-white flex items-center justify-center border border-neutral-700 transition-all cursor-pointer hidden sm:flex shadow-sm"
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-rose-950/80 hover:bg-rose-900 text-amber-300 flex items-center justify-center border border-amber-400/40 transition-all cursor-pointer hidden sm:flex shadow-md"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
