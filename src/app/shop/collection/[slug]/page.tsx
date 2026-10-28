@@ -1,6 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getCollectionBySlug } from "@/services/collections";
@@ -38,7 +38,7 @@ export default async function ShopCollectionDetailPage({ params }: CollectionPag
   const col = await getCollectionBySlug(slug);
 
   if (!col) {
-    notFound();
+    redirect("/collections");
   }
 
   // Filter products by collection id (published only)

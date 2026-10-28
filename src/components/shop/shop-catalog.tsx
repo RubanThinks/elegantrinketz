@@ -237,7 +237,7 @@ export function ShopCatalog({
 
         {/* Quick Budget Shortcuts */}
         <div className="grid grid-cols-2 gap-1.5 mt-3 pt-3 border-t border-neutral-100">
-          {[499, 799, 999, 1499].map((bPrice) => (
+          {[499, 999, 1999, 4999].map((bPrice) => (
             <button
               key={bPrice}
               type="button"
@@ -249,7 +249,7 @@ export function ShopCatalog({
                   : "bg-white text-neutral-600 border-neutral-200 hover:border-[#881337] hover:text-[#881337]"
               )}
             >
-              Under ₹{bPrice}
+              Under ₹{bPrice.toLocaleString("en-IN")}
             </button>
           ))}
         </div>

@@ -82,7 +82,7 @@ export function Footer() {
             </Link>
 
             <p className="text-xs text-rose-100/80 leading-relaxed max-w-sm">
-              Your premier boutique for trending Side Cut Kurtis, Umbrella Kurtis, Festive 3-Piece Sets, Straight Pants, and Shimmer Leggings.
+              Your premier boutique for handcrafted women&apos;s ethnic wear, curated celebratory outfits, and bespoke accessories.
             </p>
 
             {/* Direct Official WhatsApp Support Button */}

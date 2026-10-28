@@ -71,41 +71,41 @@ export interface FooterSection {
 
 export const footerNavigation: FooterSection[] = [
   {
-    title: "Shop",
+    title: "Shop & Discover",
     links: [
       { label: "All Products", href: "/shop" },
-      { label: "New Arrivals", href: "/shop/collection/new-arrivals" },
-      { label: "Best Sellers", href: "/shop/collection/best-sellers" },
-      { label: "Collections", href: "/collections" },
+      { label: "Curated Collections", href: "/collections" },
+      { label: "Boutique Categories", href: "/categories" },
+      { label: "Search Catalog", href: "/search" },
+      { label: "My Shopping Bag", href: "/cart" },
     ],
   },
   {
-    title: "Categories",
+    title: "Customer Care",
     links: [
-      { label: "Side Cut Kurtis", href: "/shop/side-cut-kurtis" },
-      { label: "Umbrella Kurtis", href: "/shop/umbrella-kurtis" },
-      { label: "3 Piece Sets", href: "/shop/three-piece-sets" },
-      { label: "Straight Pants", href: "/shop/straight-pants" },
-      { label: "Shimmer Leggings", href: "/shop/shimmer-leggings" },
-      { label: "Ethnic & Festive Wear", href: "/shop/ethnic-wear" },
-      { label: "Accessories (Trinketz)", href: "/shop/accessories-trinketz" },
+      { label: "Track Your Order", href: "/account/orders" },
+      { label: "Shipping & Delivery", href: "/shipping" },
+      { label: "Returns & Exchanges", href: "/returns" },
+      { label: "Size & Fit Guide", href: "/size-guide" },
+      { label: "Contact & WhatsApp", href: "/contact" },
     ],
   },
   {
-    title: "Help",
+    title: "About Boutique",
     links: [
-      { label: "Contact Us", href: "/contact" },
-      { label: "Shipping", href: "/shipping" },
-      { label: "Returns", href: "/returns" },
-      { label: "Size Guide", href: "/size-guide" },
+      { label: "Our Story & Craft", href: "/our-story" },
+      { label: "About Us", href: "/about" },
+      { label: "Salem Store", href: "/contact" },
+      { label: "Quality Assurance", href: "/shipping" },
     ],
   },
   {
-    title: "Legal",
+    title: "Consumer Policy",
     links: [
       { label: "Privacy Policy", href: "/privacy" },
       { label: "Terms of Service", href: "/terms" },
       { label: "Cookie Policy", href: "/cookies" },
+      { label: "100% Secure Shopping", href: "/shipping" },
     ],
   },
 ];

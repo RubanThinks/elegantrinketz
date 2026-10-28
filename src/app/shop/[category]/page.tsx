@@ -1,6 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getCategoryBySlug } from "@/services/categories";
@@ -39,7 +39,7 @@ export default async function ShopCategoryPage({ params }: CategoryPageProps) {
   const category = await getCategoryBySlug(slug);
 
   if (!category) {
-    notFound();
+    redirect("/shop");
   }
 
   // Fetch only published products for this active category

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Truck, ShieldCheck, Sparkles } from "lucide-react";
 import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
-import { getProductBySlug, getRelatedProducts, toProductCardData } from "@/services/products";
+import { getProductBySlug, getRelatedProducts, getProducts, toProductCardData } from "@/services/products";
 import { getDealOfTheDaySettings, isDealActive } from "@/services/storefront";
 import { Badge } from "@/components/ui/badge";
 import { JsonLd, getProductSchema, getBreadcrumbSchema } from "@/lib/seo/structured-data";
@@ -42,7 +42,76 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const product = await getProductBySlug(slug);
 
   if (!product) {
-    notFound();
+    const { products: availableProducts } = await getProducts({ limit: 8 }).catch(() => ({ products: [] }));
+    const cardProducts = availableProducts.map(toProductCardData);
+    const whatsappInquiryUrl = `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
+      `Hello ${siteConfig.name}, I was looking for the item "${slug}" on your store, but could not find it. Could you please check if it is available or restocked?`
+    )}`;
+
+    return (
+      <div className="py-12 sm:py-20 bg-background min-h-[70vh]">
+        <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-[#881337] text-xs font-semibold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-[#881337]" />
+            <span>Product Availability Notice</span>
+          </div>
+
+          <h1 className="text-2xl sm:text-4xl font-serif text-neutral-900 tracking-tight">
+            The Product You Requested Could Not Be Found
+          </h1>
+
+          <p className="text-sm sm:text-base text-neutral-600 max-w-xl mx-auto leading-relaxed">
+            We apologize for the inconvenience. The design or garment you are looking for may have been sold out, renamed, or is temporarily unavailable in our current catalogue.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Link
+              href="/shop"
+              className="px-6 py-2.5 rounded-xl bg-[#881337] hover:bg-[#700f2d] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
+            >
+              Explore Full Collection
+            </Link>
+            <Link
+              href="/search"
+              className="px-6 py-2.5 rounded-xl bg-white border border-neutral-300 hover:border-neutral-900 text-neutral-800 text-xs font-bold uppercase tracking-wider transition-colors"
+            >
+              Search Catalog
+            </Link>
+            <a
+              href={whatsappInquiryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
+            >
+              <WhatsAppIcon className="w-4 h-4 text-white" />
+              <span>Inquire on WhatsApp</span>
+            </a>
+          </div>
+
+          {cardProducts.length > 0 && (
+            <div className="pt-14 text-left border-t border-neutral-200 mt-10">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-serif text-neutral-900">
+                    Discover Available Creations
+                  </h2>
+                  <p className="text-xs text-neutral-500 mt-0.5">
+                    Handpicked pieces currently in stock and ready to ship
+                  </p>
+                </div>
+                <Link
+                  href="/shop"
+                  className="text-xs font-bold text-[#881337] hover:underline"
+                >
+                  View All &rarr;
+                </Link>
+              </div>
+              <ProductGrid products={cardProducts} />
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
   // Compile full image list with primary first
