@@ -22,7 +22,7 @@ export const siteConfig = {
   /** Brand assets */
   logo: "/logo.png",
   logoDark: "/logo-dark.png",
-  favicon: "/logo.png",
+  favicon: "/favicon.ico",
   previewImage: "/logo.png",
   ogImage: "/logo.png",
 
