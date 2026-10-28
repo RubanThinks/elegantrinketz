@@ -8,22 +8,21 @@ import {
   Trash2,
   Plus,
   Minus,
-  MessageCircle,
   AlertTriangle,
   CheckCircle2,
   RefreshCw,
   ShieldCheck,
+  CreditCard,
 } from "lucide-react";
 import { useCart } from "@/providers/cart-provider";
 import {
   validateCartItemsForOrder,
-  buildWhatsAppOrderUrl,
   type CartValidationResult,
 } from "@/services/cart/validation";
 import { formatPrice } from "@/config/constants";
-import { siteConfig } from "@/config/site";
 import { EmptyState } from "@/components/common/empty-state";
 import { Button } from "@/components/ui/button";
+import { OnlineCheckoutModal } from "@/components/cart/online-checkout-modal";
 import { cn } from "@/lib/utils";
 
 export function CartView() {
@@ -39,6 +38,7 @@ export function CartView() {
   } = useCart();
 
   const [isValidating, setIsValidating] = useState<boolean>(false);
+  const [isOnlineCheckoutOpen, setIsOnlineCheckoutOpen] = useState<boolean>(false);
   const [validationResult, setValidationResult] = useState<CartValidationResult | null>(null);
   const [orderSuccessMessage, setOrderSuccessMessage] = useState<string | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
@@ -55,7 +55,7 @@ export function CartView() {
     setOrderSuccessMessage(null);
   };
 
-  const handleOrderOnWhatsApp = async () => {
+  const handleProceedToCheckout = async () => {
     setIsValidating(true);
     setOrderSuccessMessage(null);
 
@@ -66,45 +66,14 @@ export function CartView() {
 
       if (!result.isValid) {
         // Validation issues detected (stock reduced, price changed, unpublished)
-        // Scroll to error banner if needed
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
 
-      // 2. Build secure combined order WhatsApp link (NO automatic Firestore order creation)
-      const { url, error } = buildWhatsAppOrderUrl(
-        result.validatedItems,
-        result.subtotal,
-        result.totalQuantity
-      );
-
-      if (error) {
-        setValidationResult({
-          isValid: false,
-          issues: [
-            {
-              productId: "",
-              productName: "Store Settings",
-              type: "out_of_stock",
-              message: error,
-            },
-          ],
-          validatedItems: [],
-          subtotal: 0,
-          totalQuantity: 0,
-        });
-        return;
-      }
-
-      // 3. Open WhatsApp in new tab / app
-      window.open(url, "_blank", "noopener,noreferrer");
-
-      // 4. Cart remains intact. Show feedback.
-      setOrderSuccessMessage(
-        "WhatsApp opened with your bag items! Send the message to connect with our stylist team to confirm availability and finalize your order."
-      );
+      // 2. Open standard Razorpay Checkout modal
+      setIsOnlineCheckoutOpen(true);
     } catch (err) {
-      console.error("[CartView] WhatsApp order preparation failed:", err);
+      console.error("[CartView] Cart validation failed:", err);
       setValidationResult({
         isValid: false,
         issues: [
@@ -250,7 +219,7 @@ export function CartView() {
                 Please review changes to your shopping bag
               </h2>
               <p className="text-xs text-amber-800 leading-relaxed font-light">
-                Some items have had stock or price adjustments since you added them. To ensure accurate ordering, please update your bag before proceeding to WhatsApp.
+                Some items have had stock or price adjustments since you added them. To ensure accurate ordering, please update your bag before proceeding to checkout.
               </p>
               <ul className="text-xs space-y-1 list-disc list-inside text-amber-900 pt-1">
                 {validationResult.issues.map((iss, idx) => (
@@ -437,49 +406,53 @@ export function CartView() {
               </div>
 
               <p className="text-xs text-neutral-500 font-light pt-1">
-                Shipping and payment details will be confirmed on WhatsApp.
+                Taxes included. Standard shipping calculated upon checkout.
               </p>
             </div>
 
-            {/* Explanatory Brand Note */}
+            {/* Primary E-Commerce Checkout CTA */}
+            <div className="pt-2">
+              <Button
+                type="button"
+                variant="primary"
+                size="lg"
+                disabled={isValidating || items.length === 0}
+                onClick={handleProceedToCheckout}
+                className="w-full text-xs sm:text-sm uppercase tracking-wider font-semibold py-4 rounded-xl flex items-center justify-center gap-2.5 shadow-md bg-neutral-950 hover:bg-neutral-800 text-white transition-all focus:ring-2 focus:ring-neutral-950/40 cursor-pointer disabled:opacity-40"
+              >
+                {isValidating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Validating Bag...</span>
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4" />
+                    <span>Proceed to Checkout ({formatPrice(subtotal)})</span>
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Security Badges */}
             <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-1.5 text-xs text-neutral-600">
               <div className="flex items-center gap-1.5 font-medium text-neutral-900">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Atelier WhatsApp Ordering</span>
+                <span>100% Secure Checkout</span>
               </div>
-              <p className="font-light leading-relaxed">
-                We do not collect online payments or cards. Your bag details will be combined into a direct WhatsApp message to our stylists for sizing confirmation, shipping, and payment options.
+              <p className="font-light leading-relaxed text-[11px]">
+                Powered by official Razorpay 256-bit SSL encryption. All major UPI apps (GPay, PhonePe, Paytm), debit/credit cards, and netbanking accepted.
               </p>
             </div>
-
-            {/* Primary CTA: Order on WhatsApp */}
-            <Button
-              type="button"
-              variant="primary"
-              size="lg"
-              disabled={isValidating || items.length === 0}
-              onClick={handleOrderOnWhatsApp}
-              className="w-full text-xs sm:text-sm uppercase tracking-wider font-semibold py-4 rounded-xl flex items-center justify-center gap-2.5 shadow-md bg-[#25D366] hover:bg-[#1da851] text-white transition-all focus:ring-2 focus:ring-[#25D366]/40 cursor-pointer"
-            >
-              {isValidating ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Validating Stock...</span>
-                </>
-              ) : (
-                <>
-                  <MessageCircle className="w-5 h-5 fill-white" />
-                  <span>Order on WhatsApp</span>
-                </>
-              )}
-            </Button>
-
-            <p className="text-[11px] text-center text-neutral-400 font-light">
-              Orders confirmed via official WhatsApp at {siteConfig.whatsappNumberFormatted}
-            </p>
           </div>
         </div>
       </div>
+
+      {/* Online Checkout Modal */}
+      <OnlineCheckoutModal
+        isOpen={isOnlineCheckoutOpen}
+        onClose={() => setIsOnlineCheckoutOpen(false)}
+      />
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
 import { getFirebaseDb } from "@/lib/firebase/client";
 import { logAdminActivity } from "@/services/activity";
 import type {
+  Address,
   Order,
   OrderItem,
   OrderStatus,
@@ -55,8 +56,14 @@ function mapDocToOrder(id: string, data: DocumentData): Order {
     confirmedBy: data.confirmedBy || null,
     confirmedAt: data.confirmedAt?.toDate?.()?.toISOString() || data.confirmedAt || null,
     cancelledAt: data.cancelledAt?.toDate?.()?.toISOString() || data.cancelledAt || null,
-    cancelReason: data.cancelReason || null,
     inventoryDeducted: Boolean(data.inventoryDeducted),
+
+    // Payment details
+    paymentMethod: data.paymentMethod || (data.whatsappInitiated ? "whatsapp" : "razorpay"),
+    paymentStatus: data.paymentStatus || (data.status === "confirmed" ? "paid" : "pending"),
+    razorpayOrderId: data.razorpayOrderId || null,
+    razorpayPaymentId: data.razorpayPaymentId || null,
+    razorpaySignature: data.razorpaySignature || null,
 
     // Tracking details
     trackingNumber: data.trackingNumber || null,
@@ -176,7 +183,7 @@ export async function createAdminOrder(
     const totalAmount = snapshottedItems.reduce((acc, i) => acc + (i.lineTotal || (i.price * i.quantity)), 0);
     const orderNumber = generateOrderNumber();
 
-    const docRef = await addDoc(collection(db, ORDERS_COLLECTION), {
+    const adminOrderPayload: Record<string, unknown> = {
       orderNumber,
       userId: userId || null,
       customerName: customerName.trim(),
@@ -186,11 +193,16 @@ export async function createAdminOrder(
       totalAmount,
       whatsappInitiated: true,
       items: snapshottedItems,
-      notes: notes?.trim() || undefined,
       inventoryDeducted: false,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    });
+    };
+
+    if (notes && notes.trim()) {
+      adminOrderPayload.notes = notes.trim();
+    }
+
+    const docRef = await addDoc(collection(db, ORDERS_COLLECTION), adminOrderPayload);
 
     // Log admin activity
     await logAdminActivity({
@@ -547,7 +559,7 @@ export async function cancelOrder(
       // Phase 6.1 Requirement 3: Confirmed orders cannot be cancelled / restocked in Phase 6
       if (orderData.status === "confirmed") {
         throw new Error(
-          "Confirmed-order cancellation/restocking workflow is not yet implemented. Confirmed orders cannot be cancelled in this phase."
+          "Confirmed orders cannot be cancelled directly to maintain inventory integrity. Please process a return or exchange."
         );
       }
 
@@ -826,3 +838,279 @@ export async function allocateOrderToUser(
     };
   }
 }
+
+export interface CreatePaidOnlineOrderInput {
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string | null;
+  userId?: string | null;
+  shippingAddress: Address;
+  items: Array<{
+    productId: string;
+    sizeId?: string | null;
+    sizeName?: string | null;
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+    name?: string;
+    sku?: string;
+    image?: string;
+  }>;
+  totalAmount: number;
+  notes?: string;
+}
+
+/**
+ * Creates and confirms an online order paid through Razorpay.
+ * Executes atomically in a Firestore transaction:
+ * - Checks stock sufficiency for each ordered size variant
+ * - Deducts inventory from the products collection
+ * - Creates an immutable confirmed order record with Razorpay payment details
+ */
+export async function createPaidOnlineOrder(
+  input: CreatePaidOnlineOrderInput
+): Promise<{ success: boolean; id?: string; orderNumber?: string; message: string }> {
+  const {
+    razorpayOrderId,
+    razorpayPaymentId,
+    razorpaySignature,
+    customerName,
+    customerPhone,
+    customerEmail,
+    userId,
+    shippingAddress,
+    items,
+    totalAmount,
+    notes,
+  } = input;
+
+  if (!customerName?.trim() || !customerPhone?.trim()) {
+    return { success: false, message: "Customer name and phone number are required." };
+  }
+
+  if (!items || items.length === 0) {
+    return { success: false, message: "Order must contain at least one item." };
+  }
+
+  const db = getFirebaseDb();
+  const orderNumber = generateOrderNumber();
+  const orderRef = doc(collection(db, ORDERS_COLLECTION));
+
+  try {
+    await runTransaction(db, async (transaction) => {
+      // 1. Fetch all product documents involved
+      const productIds = Array.from(new Set(items.map((i) => i.productId)));
+      const productSnaps = new Map<string, DocumentData>();
+
+      for (const pId of productIds) {
+        const pRef = doc(db, PRODUCTS_COLLECTION, pId);
+        const pSnap = await transaction.get(pRef);
+        if (!pSnap.exists()) {
+          throw new Error(`Product ${pId} not found in catalog.`);
+        }
+        productSnaps.set(pId, pSnap.data());
+      }
+
+      // 2. Validate stock & prepare decrements
+      const requestedByProduct = new Map<string, Map<string, number>>();
+      for (const item of items) {
+        if (!requestedByProduct.has(item.productId)) {
+          requestedByProduct.set(item.productId, new Map<string, number>());
+        }
+        const sizeMap = requestedByProduct.get(item.productId)!;
+        const sizeKey = item.sizeId || item.sizeName || "default";
+        sizeMap.set(sizeKey, (sizeMap.get(sizeKey) || 0) + item.quantity);
+      }
+
+      const updatedProducts = new Map<
+        string,
+        { sizes: ProductSize[]; totalStock: number; inventoryStatus: string; isOutOfStock: boolean }
+      >();
+
+      for (const [pId, sizeMap] of requestedByProduct.entries()) {
+        const pData = productSnaps.get(pId);
+        if (!pData) throw new Error(`Product data missing for ID "${pId}".`);
+        const currentSizes: ProductSize[] = Array.isArray(pData.sizes) ? [...pData.sizes] : [];
+        if (currentSizes.length === 0) {
+          // One-size or flat-stock product inventory tracking
+          const totalRequested = Array.from(sizeMap.values()).reduce((a, b) => a + b, 0);
+          const topStock =
+            typeof pData.totalStock === "number"
+              ? pData.totalStock
+              : typeof pData.stock === "number"
+              ? pData.stock
+              : 999;
+
+          if (topStock < totalRequested) {
+            throw new Error(
+              `Insufficient stock for "${pData.name}": available ${topStock}, ordered ${totalRequested}.`
+            );
+          }
+
+          const totalRemainingStock = Math.max(0, topStock - totalRequested);
+          const isOutOfStock = totalRemainingStock <= 0;
+          const inventoryStatus =
+            totalRemainingStock === 0
+              ? "out_of_stock"
+              : totalRemainingStock <= 3
+              ? "low_stock"
+              : "in_stock";
+
+          updatedProducts.set(pId, {
+            sizes: [],
+            totalStock: totalRemainingStock,
+            inventoryStatus,
+            isOutOfStock,
+          });
+          continue;
+        }
+
+        for (const [sizeKey, reqQty] of sizeMap.entries()) {
+          const sizeIndex = currentSizes.findIndex(
+            (s) => s.id === sizeKey || s.name === sizeKey
+          );
+
+          if (sizeIndex === -1) {
+            throw new Error(`Variant "${sizeKey}" not found for product "${pData.name}".`);
+          }
+
+          const currentStock = currentSizes[sizeIndex].stock || 0;
+          if (currentStock < reqQty) {
+            throw new Error(
+              `Insufficient stock for "${pData.name}" (${currentSizes[sizeIndex].name}): available ${currentStock}, ordered ${reqQty}.`
+            );
+          }
+
+          const newStock = currentStock - reqQty;
+          currentSizes[sizeIndex] = {
+            ...currentSizes[sizeIndex],
+            stock: newStock,
+            isAvailable: newStock > 0,
+          };
+        }
+
+        const totalRemainingStock = currentSizes.reduce(
+          (sum, s) => sum + Math.max(0, s.stock || 0),
+          0
+        );
+        const isOutOfStock = currentSizes.length > 0 ? totalRemainingStock <= 0 : false;
+        const inventoryStatus =
+          totalRemainingStock === 0
+            ? "out_of_stock"
+            : totalRemainingStock <= 3
+            ? "low_stock"
+            : "in_stock";
+
+        updatedProducts.set(pId, {
+          sizes: currentSizes,
+          totalStock: totalRemainingStock,
+          inventoryStatus,
+          isOutOfStock,
+        });
+      }
+
+      // 3. Atomically update product inventories
+      for (const [pId, updateData] of updatedProducts.entries()) {
+        const pRef = doc(db, PRODUCTS_COLLECTION, pId);
+        transaction.update(pRef, {
+          sizes: updateData.sizes,
+          totalStock: updateData.totalStock,
+          inventoryStatus: updateData.inventoryStatus,
+          isOutOfStock: updateData.isOutOfStock,
+          updatedAt: serverTimestamp(),
+        });
+      }
+
+      // 4. Create snapshotted items
+      const snapshottedItems: OrderItem[] = items.map((i) => {
+        const pData = productSnaps.get(i.productId);
+        const itemObj: Record<string, unknown> = {
+          productId: i.productId,
+          name: i.name || pData?.name || "Product",
+          slug: (i as any).productSlug || (i as any).slug || pData?.slug || "",
+          sku: i.sku || pData?.sku || "SKU-ONLINE",
+          price: i.unitPrice,
+          quantity: i.quantity,
+          lineTotal: i.lineTotal || i.unitPrice * i.quantity,
+          sizeId: i.sizeId || null,
+          sizeName: i.sizeName || null,
+        };
+        const itemImage = i.image || pData?.images?.primary;
+        if (itemImage) {
+          itemObj.image = itemImage;
+        }
+        return itemObj as unknown as OrderItem;
+      });
+
+      // 5. Sanitize shipping address (ensure no undefined keys)
+      const sanitizedAddress: Record<string, unknown> = {
+        id: shippingAddress.id || `addr-${Date.now()}`,
+        fullName: shippingAddress.fullName || customerName,
+        phone: shippingAddress.phone || customerPhone,
+        line1: shippingAddress.line1 || "",
+        city: shippingAddress.city || "",
+        state: shippingAddress.state || "",
+        postalCode: shippingAddress.postalCode || "",
+        country: shippingAddress.country || "India",
+      };
+      if (shippingAddress.line2 && shippingAddress.line2.trim()) {
+        sanitizedAddress.line2 = shippingAddress.line2.trim();
+      }
+
+      // 6. Create Order Document Payload (strictly zero undefined fields)
+      const orderPayload: Record<string, unknown> = {
+        orderNumber,
+        userId: userId || null,
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        customerEmail: customerEmail?.trim() || null,
+        status: "confirmed",
+        paymentStatus: "paid",
+        paymentMethod: "razorpay",
+        razorpayOrderId,
+        razorpayPaymentId,
+        razorpaySignature,
+        totalAmount,
+        whatsappInitiated: false,
+        inventoryDeducted: true,
+        items: snapshottedItems,
+        shippingAddress: sanitizedAddress,
+        confirmedAt: serverTimestamp(),
+        trackingHistory: [
+          {
+            id: `trk-${Date.now()}`,
+            status: "confirmed",
+            title: "Payment Received & Order Confirmed",
+            description: `Paid via Razorpay (Payment ID: ${razorpayPaymentId})`,
+            timestamp: new Date().toISOString(),
+          },
+        ],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      if (notes && notes.trim()) {
+        orderPayload.notes = notes.trim();
+      }
+
+      transaction.set(orderRef, orderPayload);
+    });
+
+    return {
+      success: true,
+      id: orderRef.id,
+      orderNumber,
+      message: `Order ${orderNumber} placed and paid successfully.`,
+    };
+  } catch (error: unknown) {
+    console.error("[OrdersService] Failed to create paid online order:", error);
+    return {
+      success: false,
+      message: (error as Error)?.message || "Failed to process paid order.",
+    };
+  }
+}
+

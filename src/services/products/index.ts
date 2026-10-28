@@ -378,20 +378,32 @@ export async function getProducts(
  * Fetch a single product by slug from Firestore.
  */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const cleanSlug = slug.trim().toLowerCase();
+  const clean = slug.trim();
+  const cleanSlug = clean.toLowerCase();
   try {
     const db = getFirebaseDb();
+    
+    // 1. Try querying by slug (including published and out-of-stock items, excluding drafts/archived)
     const q = query(
       collection(db, PRODUCTS_COLLECTION),
       where("slug", "==", cleanSlug),
-      where("status", "==", "published"),
       limit(1)
     );
     const snap = await getDocs(q);
 
     if (!snap.empty && snap.docs[0]) {
       const product = normalizeProductDoc(snap.docs[0].id, snap.docs[0].data());
-      if (product.status === "published" && product.isPublished) {
+      if (product.status !== "draft" && product.status !== "archived") {
+        return product;
+      }
+    }
+
+    // 2. Fallback: If not found by slug, check if the identifier is a direct product ID
+    const ref = doc(db, PRODUCTS_COLLECTION, clean);
+    const directSnap = await getDoc(ref);
+    if (directSnap.exists()) {
+      const product = normalizeProductDoc(directSnap.id, directSnap.data());
+      if (product.status !== "draft" && product.status !== "archived") {
         return product;
       }
     }
@@ -405,7 +417,10 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   if (USE_DEMO_DATA) {
     return (
       demoProducts.find(
-        (p) => p.slug === cleanSlug && p.status === "published" && p.isPublished
+        (p) =>
+          (p.slug === cleanSlug || p.id === clean) &&
+          p.status !== "draft" &&
+          p.status !== "archived"
       ) || null
     );
   }

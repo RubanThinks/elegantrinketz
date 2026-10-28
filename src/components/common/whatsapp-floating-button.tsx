@@ -30,14 +30,14 @@ export function WhatsAppFloatingButton() {
       {/* Friendly Tooltip / Greeting pill (desktop and hover state) */}
       <div
         className={cn(
-          "hidden md:flex items-center bg-white text-neutral-800 text-xs font-medium px-3.5 py-2 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.12)] border border-neutral-100 transition-all duration-300 pointer-events-none",
+          "hidden md:flex items-center bg-white text-neutral-800 text-xs font-medium px-3.5 py-2 rounded-full shadow-md border border-neutral-200 transition-all duration-300 pointer-events-none",
           isHovered
             ? "opacity-100 translate-x-0"
             : "opacity-0 translate-x-2"
         )}
       >
         <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2" />
-        Order &amp; Chat on WhatsApp
+        Customer Care &amp; Sizing Help
       </div>
 
       {/* Floating Action Button */}
@@ -45,10 +45,10 @@ export function WhatsAppFloatingButton() {
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Chat with us on WhatsApp"
+        aria-label="Customer Support Chat"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="group relative flex items-center justify-center w-14 h-14 sm:w-15 sm:h-15 rounded-full bg-[#25D366] text-white shadow-[0_4px_20px_rgba(37,211,102,0.4)] hover:shadow-[0_6px_24px_rgba(37,211,102,0.55)] hover:scale-105 active:scale-95 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 cursor-pointer"
+        className="group relative flex items-center justify-center w-14 h-14 sm:w-15 sm:h-15 rounded-full bg-[#25D366] text-white shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 cursor-pointer"
       >
         <WhatsAppIcon className="w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 group-hover:scale-110" />
 

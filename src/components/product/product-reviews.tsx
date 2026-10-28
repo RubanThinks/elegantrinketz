@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Star, MessageSquarePlus, CheckCircle2, ThumbsUp, Sparkles, X } from "lucide-react";
+import { Star, MessageSquarePlus, CheckCircle2, Sparkles, X, Trash2, Loader2, ShieldCheck } from "lucide-react";
 import type { ProductReview } from "@/types";
-import { getProductReviews, submitProductReview } from "@/services/reviews";
+import { getProductReviews, submitProductReview, deleteProductReview } from "@/services/reviews";
+import { useAuth } from "@/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 
 interface ProductReviewsProps {
@@ -17,11 +18,15 @@ export function ProductReviews({
   productName,
   productSlug,
 }: ProductReviewsProps) {
+  const { userProfile } = useAuth();
+  const isAdmin = userProfile?.role === "admin" || userProfile?.role === "super_admin";
+
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Review Form State
   const [rating, setRating] = useState(5);
@@ -97,6 +102,25 @@ export function ProductReviews({
       setFormError("Failed to submit review. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!window.confirm("Are you sure you want to delete this customer review? This will immediately recalculate the product rating and remove spam from the store.")) {
+      return;
+    }
+    setDeletingId(reviewId);
+    try {
+      const res = await deleteProductReview(reviewId, productId);
+      if (res.success) {
+        setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+      } else {
+        alert(res.message);
+      }
+    } catch (err) {
+      console.error("Failed to delete review:", err);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -334,13 +358,32 @@ export function ProductReviews({
                     </div>
                   </div>
 
-                  <span className="text-[10px] text-neutral-400">
-                    {new Date(rev.createdAt).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-neutral-400">
+                      {new Date(rev.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
+
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteReview(rev.id)}
+                        disabled={deletingId === rev.id}
+                        title="Admin: Delete spam or illegible review"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-colors border border-rose-200 cursor-pointer disabled:opacity-50"
+                      >
+                        {deletingId === rev.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3 h-3" />
+                        )}
+                        <span>Delete Review</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Rating Stars & Title */}

@@ -114,7 +114,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden" role="dialog" aria-modal="true">
           <div
-            className="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/60"
             onClick={() => setIsMobileMenuOpen(false)}
           />
           <div className="relative w-72 bg-white h-full shadow-2xl flex flex-col justify-between p-5 z-10 animate-in slide-in-from-left duration-300">

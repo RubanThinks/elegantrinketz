@@ -28,10 +28,10 @@ export const siteConfig = {
 
   /** Contact */
   email: "",
-  phone: "+91 78452 03893",
-  phoneNumbers: ["+91 78452 03893", "+91 88382 71225"],
-  whatsappNumber: "917845203893",
-  whatsappNumberFormatted: "+91 78452 03893",
+  phone: "+91 88382 71225",
+  phoneNumbers: ["+91 88382 71225"],
+  whatsappNumber: "918838271225",
+  whatsappNumberFormatted: "+91 88382 71225",
   address: {
     street: "3/76 A, Jeeva Street",
     area: "Jagir Ammapalayam",
@@ -62,7 +62,7 @@ export const siteConfig = {
   social: {
     instagram: "",
     facebook: "",
-    whatsapp: "https://wa.me/917845203893",
+    whatsapp: "https://wa.me/918838271225",
   },
 
   /** SEO defaults */
@@ -82,7 +82,7 @@ export const siteConfig = {
   /** Announcement bar */
   announcement: {
     enabled: true,
-    message: "New side cut kurtis & 3-piece sets now available — Order via WhatsApp for instant delivery",
+    message: "Free Express Shipping on all orders across India · Fast Dispatch & 100% Secure Checkout",
     link: "/shop",
     linkText: "Shop Now",
   },

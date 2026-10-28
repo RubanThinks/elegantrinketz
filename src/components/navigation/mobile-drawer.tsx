@@ -73,9 +73,9 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
       aria-label="App Menu"
       className="fixed inset-0 z-50 flex lg:hidden"
     >
-      {/* Blurred Backdrop */}
+      {/* Solid Backdrop Overlay */}
       <div
-        className="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs transition-opacity duration-300"
+        className="fixed inset-0 bg-black/60 transition-opacity duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -90,14 +90,14 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
               type="button"
               onClick={onClose}
               aria-label="Close menu"
-              className="absolute top-4 right-4 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-full bg-neutral-800 hover:bg-neutral-700 text-white transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             {/* Profile Greeting */}
             <div className="flex items-center gap-3 mt-1">
-              <div className="w-11 h-11 rounded-full p-[1px] bg-white/20 shrink-0 overflow-hidden">
+              <div className="w-11 h-11 rounded-full p-[1px] bg-neutral-800 shrink-0 overflow-hidden">
                 {isAuthenticated && user?.photoURL ? (
                   <Image
                     src={user.photoURL}
@@ -236,16 +236,16 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
           </div>
         </div>
 
-        {/* Bottom Drawer Bar: WhatsApp Order Assistance */}
+        {/* Bottom Drawer Bar: Customer Support Assistance */}
         <div className="p-4 border-t border-neutral-200 bg-neutral-50 space-y-2">
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#20bd5a] transition-all shadow-sm active:scale-98 font-flipkart"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-neutral-900 text-white text-xs font-bold uppercase tracking-wider hover:bg-neutral-800 transition-all shadow-sm active:scale-98 font-flipkart"
           >
-            <WhatsAppIcon className="w-4 h-4" />
-            <span>Order via WhatsApp</span>
+            <WhatsAppIcon className="w-4 h-4 text-emerald-400" />
+            <span>Customer Support Chat</span>
           </a>
 
           {isAuthenticated && (

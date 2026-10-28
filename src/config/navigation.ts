@@ -15,6 +15,7 @@ import {
   ClipboardList,
   Settings,
   Sparkles,
+  MessageSquare,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -139,5 +140,6 @@ export const adminNavigation: NavItem[] = [
   { label: "Collections", href: "/admin/collections", icon: Layers },
   { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Orders", href: "/admin/orders", icon: ClipboardList },
+  { label: "Reviews", href: "/admin/reviews", icon: MessageSquare },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];

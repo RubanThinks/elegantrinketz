@@ -145,7 +145,7 @@ export function BottomNav() {
             {/* Instagram-style separated dot indicator with breathing space */}
             <div className="h-1.5 flex items-center justify-center mt-1.5">
               {isWishlistActive ? (
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.55)] animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
               ) : (
                 <span className="w-1.5 h-1.5 opacity-0" />
               )}
@@ -188,7 +188,7 @@ export function BottomNav() {
             {/* Instagram-style separated dot indicator with breathing space */}
             <div className="h-1.5 flex items-center justify-center mt-1.5">
               {isAccountActive ? (
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.55)] animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
               ) : (
                 <span className="w-1.5 h-1.5 opacity-0" />
               )}

@@ -71,11 +71,11 @@ export default function AdminDashboardPage() {
 
   const statCards = [
     {
-      title: "WhatsApp Orders",
+      title: "Customer Orders",
       count: isLoading ? "—" : `${stats.pendingOrdersCount} Pending · ${stats.ordersCount} Total`,
       href: "/admin/orders",
       icon: ClipboardList,
-      badge: stats.pendingOrdersCount > 0 ? "Action Required" : "Live Enquiries",
+      badge: stats.pendingOrdersCount > 0 ? "Action Required" : "All Processed",
       color: stats.pendingOrdersCount > 0 ? "text-amber-700 bg-amber-100" : "text-emerald-600 bg-emerald-50",
     },
     {
@@ -83,7 +83,7 @@ export default function AdminDashboardPage() {
       count: isLoading ? "—" : stats.productsCount,
       href: "/admin/products",
       icon: Package,
-      badge: "Cloudinary Connected",
+      badge: "Active Catalog",
       color: "text-rose-600 bg-rose-50",
     },
     {
@@ -110,13 +110,13 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-100 pb-5">
         <div>
           <span className="text-[10px] uppercase tracking-widest text-rose-600 font-bold">
-            Phase 3 Media & Product Management Active
+            Store Operations &amp; Catalog Live
           </span>
           <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mt-1">
             {siteConfig.name} Administration Overview
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            Live Cloudinary media integration, variant-aware inventory, and Firestore catalog synchronization.
+            High-performance media delivery, real-time inventory tracking, and catalog synchronization.
           </p>
         </div>
 
@@ -144,7 +144,7 @@ export default function AdminDashboardPage() {
                   <Icon className="w-4 h-4" />
                 </div>
                 <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
-                  {stat.badge}
+                  {stat.badge === "Cloudinary Connected" ? "Media CDN Active" : stat.badge}
                 </span>
               </div>
 
@@ -164,18 +164,18 @@ export default function AdminDashboardPage() {
         })}
       </div>
 
-      {/* Production Architecture Badges */}
+      {/* Production Services Badges */}
       <div className="border border-neutral-200 bg-neutral-50/50 rounded-2xl p-6 space-y-4">
         <h2 className="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4 text-rose-600" /> Phase 3 Architecture Pipeline
+          <Sparkles className="w-4 h-4 text-rose-600" /> Store Infrastructure &amp; Services
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-neutral-600">
           <div className="flex items-start gap-2 bg-white p-3.5 rounded-xl border border-neutral-200/80">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-neutral-900">Signed Cloudinary Uploads</p>
+              <p className="font-semibold text-neutral-900">High-Res Media Delivery</p>
               <p className="text-[11px] text-neutral-500 mt-0.5">
-                API secrets secured server-side; direct browser uploads with transformation delivery.
+                Fast-loading product photography with responsive sizing for all screen sizes.
               </p>
             </div>
           </div>

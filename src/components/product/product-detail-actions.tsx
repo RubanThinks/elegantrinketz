@@ -4,20 +4,20 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   Heart,
-  MessageCircle,
   ShoppingBag,
   Check,
   Plus,
   Minus,
   ArrowRight,
+  Zap,
 } from "lucide-react";
-import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
-import type { Product, ProductSize } from "@/types";
-import { siteConfig } from "@/config/site";
+import type { Product, ProductSize, CartItem } from "@/types";
 import { formatPrice, getDiscountPercentage } from "@/config/constants";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/providers/wishlist-provider";
 import { useCart } from "@/providers/cart-provider";
+import { OnlineCheckoutModal } from "@/components/cart/online-checkout-modal";
+import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 interface ProductDetailActionsProps {
@@ -53,10 +53,17 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
     (s) => s.name === selectedSize
   );
 
-  // Maximum stock available for current selection
-  const totalStock = product.sizes?.reduce((acc, s) => acc + (s.stock || 0), 0) ?? 0;
+  // Maximum stock available for current selection (supports variants & flat stock)
+  const totalStock =
+    product.sizes && product.sizes.length > 0
+      ? product.sizes.reduce((acc, s) => acc + (s.stock || 0), 0)
+      : ((product as any).totalStock ?? (product as any).stock ?? 0);
   const maxStock = currentSizeObj ? currentSizeObj.stock : totalStock;
-  const isAvailableStock = maxStock > 0 && !product.isOutOfStock;
+  const isAvailableStock =
+    maxStock > 0 &&
+    !product.isOutOfStock &&
+    (product as any).status !== "out_of_stock" &&
+    (product as any).inventoryStatus !== "out_of_stock";
 
   const handleSelectSize = (sizeName: string) => {
     setSelectedSize(sizeName);
@@ -117,18 +124,41 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
     }
   };
 
-  // Build dynamic single-product WhatsApp enquiry text
-  const cleanPhone = siteConfig.whatsappNumber
-    ? siteConfig.whatsappNumber.replace(/[^0-9]/g, "")
-    : "";
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [directCheckoutItem, setDirectCheckoutItem] = useState<CartItem | null>(null);
 
-  const encodedWhatsAppMessage = encodeURIComponent(
-    `Hello ${siteConfig.name}, I have a question regarding:\n\n*${product.name}*\nPrice: ${formatPrice(product.price)}\nSKU: ${product.sku}${selectedSize ? `\nSize: ${selectedSize}` : ""}\nLink: ${siteConfig.url}/products/${product.slug}\n\nCould you please confirm availability or styling advice?`
-  );
+  const handleBuyNow = () => {
+    // Check if size is required and not chosen
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      setSizeError(true);
+      return;
+    }
 
-  const whatsAppEnquiryUrl = cleanPhone
-    ? `https://wa.me/${cleanPhone}?text=${encodedWhatsAppMessage}`
-    : "#";
+    if (!isAvailableStock) {
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const singleItem: CartItem = {
+      id: `direct-${product.id}-${currentSizeObj?.id || selectedSize || "std"}`,
+      userId: "guest-direct",
+      productId: product.id,
+      sizeId: currentSizeObj?.id || selectedSize || null,
+      sizeName: selectedSize || null,
+      quantity,
+      unitPrice: product.price,
+      productName: product.name,
+      productSlug: product.slug,
+      sku: product.sku,
+      image: product.images?.primary,
+      maxStock,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    setDirectCheckoutItem(singleItem);
+    setIsCheckoutOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -280,6 +310,32 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
         </div>
       )}
 
+      {/* Out of Stock Notice & WhatsApp Restock Enquiry */}
+      {!isAvailableStock && (
+        <div className="p-3.5 rounded-xl border border-rose-200 bg-rose-50/90 text-rose-950 space-y-1.5 animate-fade-in font-amazon">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse" />
+            <p className="text-xs font-bold text-rose-900 uppercase tracking-wider">
+              Currently Out of Stock
+            </p>
+          </div>
+          <p className="text-xs text-rose-800 font-light leading-relaxed">
+            This piece is currently sold out. You can enquire directly on WhatsApp for upcoming restocks and pre-orders.
+          </p>
+          <a
+            href={`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
+              `Hello ${siteConfig.name}, I would like to enquire about restock for: ${product.name} (SKU: ${product.sku || "N/A"})`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-700 hover:text-rose-900 underline pt-0.5"
+          >
+            <span>Enquire for Restock on WhatsApp</span>
+            <ArrowRight className="w-3 h-3" />
+          </a>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="space-y-3 pt-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -307,25 +363,18 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
             </Button>
           )}
 
-          {/* Buy Now on WhatsApp (Iconic Emerald Green High-Conversion Button) */}
-          {cleanPhone ? (
-            <a
-              href={whatsAppEnquiryUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full"
-            >
-              <Button
-                type="button"
-                variant="primary"
-                size="lg"
-                className="w-full text-xs sm:text-sm font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-[#25D366] via-[#20BD5A] to-[#128C7E] hover:from-[#20BD5A] hover:to-[#0E7A6E] active:scale-[0.98] text-white shadow-md shadow-[#25D366]/25 hover:shadow-lg hover:shadow-[#25D366]/35 transition-all cursor-pointer font-flipkart"
-              >
-                <WhatsAppIcon className="w-4 h-4 text-white shrink-0" />
-                <span>Buy Now on WhatsApp</span>
-              </Button>
-            </a>
-          ) : null}
+          {/* Real E-Commerce Buy Now (Direct Razorpay Checkout) */}
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            disabled={!isAvailableStock}
+            onClick={handleBuyNow}
+            className="w-full text-xs sm:text-sm font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 bg-[#FB641B] hover:bg-[#E85913] active:scale-[0.98] text-white shadow-sm hover:shadow-lg transition-all cursor-pointer font-flipkart"
+          >
+            <Zap className="w-4 h-4 fill-white text-white shrink-0" />
+            <span>Buy Now</span>
+          </Button>
         </div>
 
         {/* Polished Confirmation Banner (Inline, does not force leaving page) */}
@@ -391,35 +440,54 @@ export function ProductDetailActions({ product }: ProductDetailActionsProps) {
           </Button>
 
           <span className="text-[11px] text-neutral-500 font-light">
-            ⚡ Instant order confirmation &amp; sizing help on WhatsApp
+            ⚡ 100% Secure Checkout · Instant Dispatch &amp; Fast Shipping
           </span>
         </div>
       </div>
 
       {/* Mobile App PWA Sticky Bottom Action Bar (Flipkart & Amazon mobile app feel) */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border-t border-neutral-200/90 px-3 py-2 flex items-center gap-2.5 lg:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.1)] pb-safe">
-        <button
-          type="button"
-          disabled={!isAvailableStock || isAdding}
-          onClick={handleAddToCart}
-          className="flex-1 h-11 bg-[#FF9F00] hover:bg-[#F39700] active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-transform cursor-pointer disabled:opacity-50 font-flipkart"
-        >
-          <ShoppingBag className="w-4 h-4 text-white" />
-          <span>{isAdding ? "Adding..." : "Add to Bag"}</span>
-        </button>
-
-        {cleanPhone ? (
-          <a
-            href={whatsAppEnquiryUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 h-11 bg-gradient-to-r from-[#25D366] via-[#20BD5A] to-[#128C7E] active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-[#25D366]/25 transition-transform cursor-pointer font-flipkart"
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-neutral-200 px-3 py-2 flex items-center gap-2.5 lg:hidden shadow-md pb-safe">
+        {!isAvailableStock ? (
+          <button
+            type="button"
+            disabled
+            className="flex-1 h-11 bg-neutral-200 text-neutral-400 font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-not-allowed font-flipkart"
           >
-            <WhatsAppIcon className="w-4 h-4 text-white shrink-0" />
-            <span>Buy on WhatsApp</span>
-          </a>
-        ) : null}
+            <span>Currently Sold Out</span>
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              disabled={isAdding}
+              onClick={handleAddToCart}
+              className="flex-1 h-11 bg-[#FF9F00] hover:bg-[#F39700] active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-transform cursor-pointer disabled:opacity-50 font-flipkart"
+            >
+              <ShoppingBag className="w-4 h-4 text-white" />
+              <span>{isAdding ? "Adding..." : "Add to Bag"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBuyNow}
+              className="flex-1 h-11 bg-[#FB641B] hover:bg-[#E85913] active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-transform cursor-pointer font-flipkart"
+            >
+              <Zap className="w-4 h-4 fill-white text-white shrink-0" />
+              <span>Buy Now</span>
+            </button>
+          </>
+        )}
       </div>
+
+      {/* Direct E-Commerce Checkout Modal */}
+      <OnlineCheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => {
+          setIsCheckoutOpen(false);
+          setDirectCheckoutItem(null);
+        }}
+        directItem={directCheckoutItem}
+      />
     </div>
   );
 }

@@ -89,7 +89,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   };
 
   return (
-    <div className="flex flex-col-reverse lg:flex-row gap-3">
+    <div className="flex flex-col-reverse lg:flex-row gap-3 isolate relative">
       {/* Thumbnail strip */}
       {images.length > 1 && (
         <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto lg:max-h-[600px] no-scrollbar">
@@ -111,7 +111,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 alt={`${productName} thumbnail ${idx + 1}`}
                 fill
                 sizes="80px"
-                className="object-cover"
+                className="object-cover object-top"
               />
             </button>
           ))}
@@ -125,7 +125,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
-        className="relative flex-1 aspect-[3/4] bg-neutral-100 rounded-xl overflow-hidden group select-none cursor-grab active:cursor-grabbing"
+        className="relative flex-1 aspect-[3/4] bg-neutral-100 rounded-xl overflow-hidden group select-none cursor-grab active:cursor-grabbing isolate"
       >
         <Image
           src={activeImage}
@@ -133,12 +133,12 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           fill
           priority
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 45vw"
-          className="object-cover transition-opacity duration-300 pointer-events-none"
+          className="object-cover object-top transition-opacity duration-300 pointer-events-none"
         />
 
-        {/* Counter Pill (Flipkart / Amazon mobile style) */}
+        {/* Counter Pill (Flipkart / Amazon / Myntra mobile style) */}
         {images.length > 1 && (
-          <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-neutral-900/75 backdrop-blur-xs text-white text-[10px] font-bold z-20 pointer-events-none font-mono">
+          <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-neutral-900 text-white text-[10px] font-bold z-10 pointer-events-none font-mono shadow-xs">
             {activeIndex + 1} / {images.length}
           </div>
         )}
@@ -153,7 +153,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 goPrev();
               }}
               aria-label="Previous image"
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-white text-neutral-900 shadow-md flex items-center justify-center transition-all opacity-80 sm:opacity-0 sm:group-hover:opacity-100 z-20 cursor-pointer active:scale-90"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white hover:bg-neutral-100 text-neutral-900 shadow-md border border-neutral-200 flex items-center justify-center transition-all opacity-90 sm:opacity-0 sm:group-hover:opacity-100 z-10 cursor-pointer active:scale-90"
             >
               <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             </button>
@@ -164,7 +164,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 goNext();
               }}
               aria-label="Next image"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-white text-neutral-900 shadow-md flex items-center justify-center transition-all opacity-80 sm:opacity-0 sm:group-hover:opacity-100 z-20 cursor-pointer active:scale-90"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white hover:bg-neutral-100 text-neutral-900 shadow-md border border-neutral-200 flex items-center justify-center transition-all opacity-90 sm:opacity-0 sm:group-hover:opacity-100 z-10 cursor-pointer active:scale-90"
             >
               <ChevronRight className="w-4 h-4 stroke-[2.5]" />
             </button>
@@ -173,7 +173,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
 
         {/* Swipe Hint / Dot Indicators */}
         {images.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
             {images.map((_, idx) => (
               <button
                 key={idx}

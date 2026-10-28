@@ -34,9 +34,9 @@ export function EditorialBanner() {
                 />
               </div>
 
-              {/* Brand Floating Halo Badge */}
-              <div className="absolute -bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-6 z-10 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-lg border border-rose-100 flex items-center gap-3 rounded-2xl">
-                <div className="relative w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-tr from-rose-500 to-pink-500 shadow-xs shrink-0">
+              {/* Brand Floating Badge */}
+              <div className="absolute -bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-6 z-10 bg-white px-4 py-2.5 shadow-md border border-neutral-200 flex items-center gap-3 rounded-2xl">
+                <div className="relative w-8 h-8 rounded-full border border-neutral-300 shrink-0">
                   <div className="w-full h-full rounded-full overflow-hidden bg-white p-[1px] flex items-center justify-center">
                     <Image
                       src={siteConfig.logo}

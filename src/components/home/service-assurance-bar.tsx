@@ -1,12 +1,12 @@
 import React from "react";
-import { Truck, RotateCcw, ShieldCheck, MessageCircle } from "lucide-react";
+import { Truck, RotateCcw, ShieldCheck, CreditCard } from "lucide-react";
 
 export function ServiceAssuranceBar() {
   const assurances = [
     {
       icon: Truck,
       title: "Fast Delivery",
-      subtitle: "Free delivery across Salem",
+      subtitle: "Free delivery across India",
     },
     {
       icon: RotateCcw,
@@ -19,9 +19,9 @@ export function ServiceAssuranceBar() {
       subtitle: "Inspected fabric & stitching",
     },
     {
-      icon: MessageCircle,
-      title: "WhatsApp Orders",
-      subtitle: "Instant sizing & checkout",
+      icon: CreditCard,
+      title: "Secure Payments",
+      subtitle: "UPI, Cards & Netbanking",
     },
   ];
 

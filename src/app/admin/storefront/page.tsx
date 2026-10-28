@@ -728,7 +728,7 @@ export default function AdminStorefrontPage() {
                         updated[editingSlideIndex].imageUrl = e.target.value;
                         setHeroSlides(updated);
                       }}
-                      placeholder="e.g. https://images.unsplash.com/... or Cloudinary URL"
+                      placeholder="e.g. https://... (direct image link or uploaded asset)"
                       className="w-full px-3 py-2 border border-neutral-200 rounded-xl text-xs font-mono text-neutral-900 focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
                     />
                   </div>

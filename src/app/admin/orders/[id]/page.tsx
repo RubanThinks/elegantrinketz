@@ -527,7 +527,7 @@ export default function AdminOrderDetailPage() {
                 <span>Admin Confirmation & Atomic Inventory Deduction</span>
               </h2>
               <p className="text-xs text-amber-900 leading-relaxed font-light">
-                Once customer payment or sizing is confirmed over WhatsApp, confirm this order to automatically deduct product stock across all ordered variants.
+                Once customer payment and order specifications are verified, confirm this order to automatically deduct product stock across all ordered variants.
               </p>
             </div>
 
@@ -623,7 +623,7 @@ export default function AdminOrderDetailPage() {
           <div className="pt-2 flex items-center gap-1.5 text-neutral-500 text-[11px] border-t border-emerald-200/60 mt-2">
             <Info className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
             <span>
-              Confirmed-order cancellation/restocking workflow is not yet implemented. Confirmed orders cannot be cancelled in this phase.
+              Confirmed orders cannot be cancelled directly to maintain live inventory integrity. Please process a return or exchange.
             </span>
           </div>
         </div>
@@ -918,7 +918,11 @@ export default function AdminOrderDetailPage() {
               </div>
               <div className="flex justify-between text-neutral-500">
                 <span>Payment Channel</span>
-                <span>WhatsApp Atelier Direct (No Gateway)</span>
+                <span className="font-medium text-neutral-800">
+                  {order.paymentMethod === "razorpay"
+                    ? "Razorpay Online (UPI/Cards)"
+                    : "Direct / Offline Settlement"}
+                </span>
               </div>
               <div className="pt-2 border-t border-neutral-200 flex justify-between items-baseline text-sm">
                 <span className="font-bold text-neutral-900">Total Amount</span>
@@ -1082,7 +1086,9 @@ export default function AdminOrderDetailPage() {
               <div className="flex justify-between text-neutral-600">
                 <span>Channel</span>
                 <span className="font-medium text-neutral-800">
-                  {order.whatsappInitiated ? "WhatsApp Manual Entry" : "Admin Direct"}
+                  {order.paymentMethod === "razorpay"
+                    ? "Online Storefront (Razorpay)"
+                    : "Staff Manual Entry"}
                 </span>
               </div>
 

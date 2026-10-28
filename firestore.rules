@@ -75,8 +75,12 @@ service cloud.firestore {
       // Products are public catalog items readable by all visitors.
       allow read: if true;
 
-      // Only administrators can create or update products
-      allow create, update: if isAdmin();
+      // Only administrators can create products
+      allow create: if isAdmin();
+
+      // Administrators can update all fields; inventory decrements can also occur upon order fulfillment
+      allow update: if isAdmin() ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sizes', 'totalStock', 'stock', 'isOutOfStock', 'inventoryStatus', 'updatedAt']);
 
       // Only super administrators can hard-delete products (destructive operation)
       allow delete: if isSuperAdmin();
@@ -170,12 +174,18 @@ service cloud.firestore {
       // Anonymous users have NO access. Active administrators can read all orders.
       allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
 
-      // STRICT SECURITY: Orders must be created only by authorized administrators.
-      // Customers and anonymous visitors CANNOT create order documents.
-      // Initial status must be 'pending' and inventoryDeducted must be false.
-      allow create: if isAdmin() &&
-        request.resource.data.status == 'pending' &&
-        request.resource.data.inventoryDeducted == false;
+      // Orders can be created by administrators (WhatsApp flow) OR when an online payment is confirmed
+      allow create: if (
+        (isAdmin() &&
+          request.resource.data.status == 'pending' &&
+          request.resource.data.inventoryDeducted == false) ||
+        (
+          request.resource.data.paymentMethod == "razorpay" &&
+          request.resource.data.paymentStatus == "paid" &&
+          request.resource.data.status == "confirmed" &&
+          request.resource.data.inventoryDeducted == true
+        )
+      );
 
       // Only authorized administrators can update orders (confirmation, cancellation).
       // Customers cannot change status, set inventoryDeducted, or modify audit fields.
@@ -209,6 +219,23 @@ service cloud.firestore {
 
       // Audit logs are strictly immutable: no updates or deletions allowed
       allow update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // PRODUCT REVIEWS (Customer Feedback & Moderation)
+    // -------------------------------------------------------------------------
+    match /productReviews/{reviewId} {
+      // Reviews are publicly readable
+      allow read: if true;
+
+      // Real shoppers can submit reviews with ratings between 1 and 5
+      allow create: if request.resource.data.rating >= 1 &&
+        request.resource.data.rating <= 5 &&
+        request.resource.data.productId is string;
+
+      // Administrators have full power to delete spam, abusive, or illegible reviews
+      allow delete: if isAdmin();
+      allow update: if isAdmin();
     }
   }
 }

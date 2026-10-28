@@ -322,10 +322,10 @@ export default function AdminOrdersPage() {
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 tracking-tight flex items-center gap-2">
             <ClipboardList className="w-6 h-6 text-neutral-800" />
-            <span>Admin Orders & Enquiries</span>
+            <span>Customer Orders &amp; Fulfillment</span>
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            Manually create orders from WhatsApp chats, review pending requests, and confirm with atomic inventory deduction.
+            Manage online Razorpay orders, record offline sales, and track fulfillment with live inventory synchronization.
           </p>
         </div>
 
@@ -468,7 +468,7 @@ export default function AdminOrdersPage() {
             <p className="text-xs text-neutral-500 max-w-sm mx-auto">
               {activeSearch || selectedStatus !== "all"
                 ? "No orders match your filter criteria. Try adjusting your search term."
-                : "No customer orders have been recorded yet. Click 'Create Order' above to manually record an order received on WhatsApp."}
+                : "No customer orders have been recorded yet. Click 'Create Order' above to manually record an offline or phone order."}
             </p>
             <Button
               variant="outline"
@@ -600,10 +600,10 @@ export default function AdminOrdersPage() {
               <div>
                 <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
                   <ShoppingBag className="w-5 h-5 text-rose-600" />
-                  <span>Create Pending Order (Admin Manual Entry)</span>
+                  <span>Create Order (Staff Manual Entry)</span>
                 </h3>
                 <p className="text-xs text-neutral-500 mt-0.5">
-                  Record details received from customer via WhatsApp. Creates order in &apos;pending&apos; status without altering stock until confirmed.
+                  Record details for phone or offline customers. Creates order in &apos;pending&apos; status without altering stock until confirmed.
                 </p>
               </div>
               <button
@@ -672,7 +672,7 @@ export default function AdminOrdersPage() {
 
                 <div>
                   <label className="block font-semibold text-neutral-700 mb-1">
-                    WhatsApp Phone *
+                    Customer Phone *
                   </label>
                   <input
                     type="tel"
@@ -701,13 +701,13 @@ export default function AdminOrdersPage() {
               {/* Order Notes */}
               <div>
                 <label className="block font-semibold text-neutral-700 mb-1">
-                  WhatsApp Conversation / Sizing Notes
+                  Customer Sizing &amp; Order Notes
                 </label>
                 <input
                   type="text"
                   value={orderNotes}
                   onChange={(e) => setOrderNotes(e.target.value)}
-                  placeholder="e.g. Customer requested custom blouse sleeve length; confirmed via WhatsApp chat."
+                  placeholder="e.g. Customer requested custom blouse sleeve length; verified with customer."
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:border-rose-600"
                 />
               </div>

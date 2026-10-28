@@ -186,6 +186,7 @@ export interface CartItem {
   productSlug?: string;
   sku?: string;
   image?: string;
+  maxStock?: number;
   createdAt: string;
   updatedAt: string;
   /** Hydrated product info for UI display and validation */
@@ -273,6 +274,13 @@ export interface Order {
   cancelReason?: string | null;
   /** Whether inventory was atomically deducted on confirmation */
   inventoryDeducted?: boolean;
+
+  /** Payment Information */
+  paymentMethod?: "razorpay" | "whatsapp" | "cod";
+  paymentStatus?: "pending" | "paid" | "failed" | "refunded";
+  razorpayOrderId?: string | null;
+  razorpayPaymentId?: string | null;
+  razorpaySignature?: string | null;
 
   /** Fulfillment & Courier Tracking */
   trackingNumber?: string | null;

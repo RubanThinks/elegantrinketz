@@ -80,16 +80,6 @@ export default function ContactPage() {
                   <p className="font-medium text-[#1a1a1a] mb-1">WhatsApp</p>
                   <div className="space-y-1">
                     <a
-                      href={`https://wa.me/917845203893?text=${encodeURIComponent(
-                        `Hello ${siteConfig.name}, I have an inquiry.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block hover:underline text-[#25D366] font-medium"
-                    >
-                      +91 78452 03893 (Primary)
-                    </a>
-                    <a
                       href={`https://wa.me/918838271225?text=${encodeURIComponent(
                         `Hello ${siteConfig.name}, I have an inquiry.`
                       )}`}
@@ -97,7 +87,7 @@ export default function ContactPage() {
                       rel="noopener noreferrer"
                       className="block hover:underline text-[#25D366] font-medium"
                     >
-                      +91 88382 71225 (Support)
+                      +91 88382 71225 (Official WhatsApp)
                     </a>
                   </div>
                 </div>

@@ -4,6 +4,8 @@ import {
   where,
   getDocs,
   addDoc,
+  deleteDoc,
+  doc,
   serverTimestamp,
   orderBy,
 } from "firebase/firestore";
@@ -34,6 +36,17 @@ function saveLocalReview(review: ProductReview): void {
     localStorage.setItem(getLocalReviewsKey(review.productId), JSON.stringify(updated));
   } catch (err) {
     console.warn("Failed to persist review locally:", err);
+  }
+}
+
+function removeLocalReview(reviewId: string, productId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const current = getLocalReviews(productId);
+    const updated = current.filter((r) => r.id !== reviewId);
+    localStorage.setItem(getLocalReviewsKey(productId), JSON.stringify(updated));
+  } catch (err) {
+    console.warn("Failed to delete review from local cache:", err);
   }
 }
 
@@ -89,13 +102,77 @@ export async function getProductReviews(productId: string): Promise<ProductRevie
 }
 
 /**
+ * Fetch all customer reviews across all products for Admin moderation.
+ */
+export async function getAllProductReviews(): Promise<ProductReview[]> {
+  try {
+    const db = getFirebaseDb();
+    const q = query(
+      collection(db, REVIEWS_COLLECTION),
+      orderBy("createdAt", "desc")
+    );
+    const snap = await getDocs(q);
+
+    const firestoreReviews: ProductReview[] = [];
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      firestoreReviews.push({
+        id: docSnap.id,
+        productId: data.productId,
+        productSlug: data.productSlug,
+        authorName: data.authorName,
+        authorCity: data.authorCity,
+        rating: Number(data.rating) || 5,
+        title: data.title,
+        comment: data.comment,
+        isVerifiedPurchase: Boolean(data.isVerifiedPurchase),
+        helpfulCount: Number(data.helpfulCount) || 0,
+        createdAt:
+          data.createdAt?.toDate?.()?.toISOString() ||
+          data.createdAt ||
+          new Date().toISOString(),
+      });
+    });
+
+    return firestoreReviews;
+  } catch (err) {
+    console.warn("[ReviewsService] Could not fetch all reviews from Firestore:", err);
+    return [];
+  }
+}
+
+/**
  * Submit a genuine customer review.
  */
 export async function submitProductReview(
   input: CreateReviewInput
 ): Promise<ProductReview> {
+  let docId = `rev-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+  // 1. Persist to Firestore if available
+  try {
+    const db = getFirebaseDb();
+    const docRef = await addDoc(collection(db, REVIEWS_COLLECTION), {
+      productId: input.productId,
+      productSlug: input.productSlug || "",
+      authorName: input.authorName.trim(),
+      authorCity: input.authorCity?.trim() || "Salem",
+      rating: Math.max(1, Math.min(5, Math.round(input.rating))),
+      title: input.title.trim(),
+      comment: input.comment.trim(),
+      isVerifiedPurchase: true,
+      helpfulCount: 0,
+      createdAt: serverTimestamp(),
+    });
+    if (docRef.id) {
+      docId = docRef.id;
+    }
+  } catch (err) {
+    console.warn("[ReviewsService] Could not persist review to Firestore, saved locally:", err);
+  }
+
   const newReview: ProductReview = {
-    id: `rev-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    id: docId,
     productId: input.productId,
     productSlug: input.productSlug,
     authorName: input.authorName.trim(),
@@ -108,19 +185,33 @@ export async function submitProductReview(
     createdAt: new Date().toISOString(),
   };
 
-  // 1. Immediately cache locally for instant UI update
+  // 2. Cache locally for instant UI update
   saveLocalReview(newReview);
 
-  // 2. Persist to Firestore if available
+  return newReview;
+}
+
+/**
+ * Delete a customer review (Admin moderation power to remove spam, abusive, or illegible reviews).
+ */
+export async function deleteProductReview(
+  reviewId: string,
+  productId?: string
+): Promise<{ success: boolean; message: string }> {
   try {
     const db = getFirebaseDb();
-    await addDoc(collection(db, REVIEWS_COLLECTION), {
-      ...newReview,
-      createdAt: serverTimestamp(),
-    });
-  } catch (err) {
-    console.warn("[ReviewsService] Could not persist review to Firestore, saved locally:", err);
-  }
+    await deleteDoc(doc(db, REVIEWS_COLLECTION, reviewId));
 
-  return newReview;
+    if (productId) {
+      removeLocalReview(reviewId, productId);
+    }
+
+    return { success: true, message: "Review deleted successfully." };
+  } catch (err: unknown) {
+    console.error("[ReviewsService] Failed to delete review:", err);
+    return {
+      success: false,
+      message: (err as Error)?.message || "Failed to delete review from database.",
+    };
+  }
 }

@@ -91,7 +91,7 @@ export function Footer() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-bold uppercase tracking-wider transition-colors font-flipkart"
               >
                 <WhatsAppIcon className="w-4 h-4 text-white" />
-                <span>Order Support on WhatsApp</span>
+                <span>Help &amp; Customer Support</span>
               </a>
             </div>
           </div>
@@ -134,19 +134,17 @@ export function Footer() {
             <span className="text-neutral-700">·</span>
             <div className="flex items-center gap-2">
               <Phone className="w-3.5 h-3.5 text-neutral-500" />
-              <a
-                href={`tel:${siteConfig.phoneNumbers[0].replace(/[^0-9+]/g, "")}`}
-                className="hover:text-white transition-colors"
-              >
-                {siteConfig.phoneNumbers[0]}
-              </a>
-              <span className="text-neutral-700">/</span>
-              <a
-                href={`tel:${siteConfig.phoneNumbers[1].replace(/[^0-9+]/g, "")}`}
-                className="hover:text-white transition-colors"
-              >
-                {siteConfig.phoneNumbers[1]}
-              </a>
+              {siteConfig.phoneNumbers.map((phone, idx) => (
+                <React.Fragment key={phone}>
+                  {idx > 0 && <span className="text-neutral-700">/</span>}
+                  <a
+                    href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {phone}
+                  </a>
+                </React.Fragment>
+              ))}
             </div>
           </div>
         </div>

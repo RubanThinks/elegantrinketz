@@ -274,7 +274,7 @@ export function MediaManager({
                     alt={item.alt || `Product image ${index + 1}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover"
+                    className="object-cover object-top"
                   />
 
                   {/* Role Badges */}
@@ -290,7 +290,7 @@ export function MediaManager({
                       </Badge>
                     )}
                     {!isPrimary && !isHover && (
-                      <Badge variant="outline" className="bg-white/90 backdrop-blur-xs text-[10px]">
+                      <Badge variant="outline" className="bg-white text-[10px] shadow-xs">
                         Gallery #{index + 1}
                       </Badge>
                     )}

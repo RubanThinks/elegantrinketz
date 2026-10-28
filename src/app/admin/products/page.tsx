@@ -140,7 +140,7 @@ export default function AdminProductsPage() {
             Products & Catalog
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            Manage your fashion catalog, Cloudinary photography, pricing, and variants.
+            Manage your fashion catalog, high-resolution photography, pricing, and variants.
           </p>
         </div>
 

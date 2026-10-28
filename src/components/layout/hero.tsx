@@ -48,7 +48,7 @@ export function Hero({ initialSlides }: HeroProps) {
   const slide = slides[validIndex];
 
   return (
-    <section className="relative w-full overflow-hidden bg-neutral-950 text-white min-h-[440px] sm:min-h-[500px] lg:min-h-[540px] flex items-center">
+    <section className="relative w-full overflow-hidden bg-neutral-950 text-white min-h-[440px] sm:min-h-[500px] lg:min-h-[540px] flex items-center isolate">
       {/* Background Banner with Dark High-Contrast Gradient */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -57,7 +57,7 @@ export function Hero({ initialSlides }: HeroProps) {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-center sm:object-[center_35%] transition-opacity duration-700"
+          className="object-cover object-[center_top] sm:object-[center_25%] transition-opacity duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/95 via-neutral-950/70 to-neutral-950/30 sm:from-neutral-950/95 sm:via-neutral-950/60" />
       </div>
@@ -108,7 +108,7 @@ export function Hero({ initialSlides }: HeroProps) {
             {slide.secondaryCtaText && slide.secondaryCtaHref && (
               <Link
                 href={slide.secondaryCtaHref}
-                className="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold text-xs sm:text-sm uppercase tracking-wider active:scale-95 transition-all font-flipkart cursor-pointer"
+                className="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-xs sm:text-sm uppercase tracking-wider active:scale-95 transition-all font-flipkart cursor-pointer border border-white"
               >
                 <span>{slide.secondaryCtaText}</span>
               </Link>
@@ -126,7 +126,7 @@ export function Hero({ initialSlides }: HeroProps) {
               setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
             }
             aria-label="Previous Offer Slide"
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-neutral-950/60 hover:bg-neutral-950 text-white flex items-center justify-center border border-white/20 transition-all cursor-pointer hidden sm:flex"
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-neutral-900 hover:bg-neutral-950 text-white flex items-center justify-center border border-neutral-700 transition-all cursor-pointer hidden sm:flex shadow-sm"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -135,7 +135,7 @@ export function Hero({ initialSlides }: HeroProps) {
             type="button"
             onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
             aria-label="Next Offer Slide"
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-neutral-950/60 hover:bg-neutral-950 text-white flex items-center justify-center border border-white/20 transition-all cursor-pointer hidden sm:flex"
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-neutral-900 hover:bg-neutral-950 text-white flex items-center justify-center border border-neutral-700 transition-all cursor-pointer hidden sm:flex shadow-sm"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -152,7 +152,7 @@ export function Hero({ initialSlides }: HeroProps) {
               onClick={() => setCurrentSlide(idx)}
               aria-label={`Go to slide ${idx + 1}`}
               className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                validIndex === idx ? "w-6 bg-[#ff9f00]" : "w-2 bg-white/40 hover:bg-white/70"
+                validIndex === idx ? "w-6 bg-[#ff9f00]" : "w-2 bg-neutral-400 hover:bg-white"
               }`}
             />
           ))}

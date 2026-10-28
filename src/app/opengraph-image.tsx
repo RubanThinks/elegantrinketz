@@ -130,7 +130,7 @@ export default async function Image() {
         >
           <span>📍 Salem, Tamil Nadu</span>
           <span>•</span>
-          <span>WhatsApp: +91 78452 03893</span>
+          <span>WhatsApp: +91 88382 71225</span>
         </div>
       </div>
     ),

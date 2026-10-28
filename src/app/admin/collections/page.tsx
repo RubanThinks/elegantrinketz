@@ -316,7 +316,7 @@ export default function AdminCollectionsPage() {
 
       {/* Modal Dialog */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 border border-neutral-200">
             <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
               <h3 className="font-bold text-base text-neutral-900">
@@ -408,7 +408,7 @@ export default function AdminCollectionsPage() {
               {/* Cloudinary Image Upload */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-neutral-700 uppercase tracking-wider block">
-                  Collection Banner (Cloudinary)
+                  Collection Banner
                 </label>
                 <div className="flex items-center gap-3">
                   {imageUrl ? (
@@ -417,7 +417,7 @@ export default function AdminCollectionsPage() {
                         src={imageUrl}
                         alt={name || "Preview"}
                         fill
-                        className="object-cover"
+                        className="object-cover object-top"
                       />
                     </div>
                   ) : null}
@@ -433,7 +433,7 @@ export default function AdminCollectionsPage() {
                     {isUploading ? (
                       <div className="flex items-center justify-center gap-2 text-rose-600">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Uploading to Cloudinary...</span>
+                        <span>Uploading Image...</span>
                       </div>
                     ) : (
                       <div className="flex items-center justify-center gap-1.5 text-neutral-600">

@@ -39,9 +39,12 @@ function AccountContent() {
     {
       icon: MapPin,
       title: "Saved Addresses",
-      description: "Manage your residential and shipping addresses.",
+      description:
+        profile?.addresses && profile.addresses.length > 0
+          ? `${profile.addresses.length} saved address${profile.addresses.length > 1 ? "es" : ""} · 1-click checkout ready`
+          : "Manage your delivery locations for 1-click checkout.",
       href: "/account/addresses",
-      ready: false,
+      ready: true,
     },
     {
       icon: Heart,

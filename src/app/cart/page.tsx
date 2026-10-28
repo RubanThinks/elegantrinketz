@@ -5,7 +5,7 @@ import { CartView } from "@/components/cart/cart-view";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Shopping Bag",
-  description: "Review items in your shopping bag before ordering on WhatsApp.",
+  description: "Review items in your shopping bag and proceed to secure online checkout.",
   path: "/cart",
   noIndex: true,
 });

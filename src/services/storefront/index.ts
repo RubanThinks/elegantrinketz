@@ -19,7 +19,7 @@ const DEAL_OF_THE_DAY_DOC = "dealOfTheDay";
 export const DEFAULT_ANNOUNCEMENT: AnnouncementSettings = {
   enabled: true,
   badgeText: "OFFER",
-  message: "Free Delivery on all orders across Salem · Instant styling help on WhatsApp",
+  message: "Free Delivery on all orders across India · Fast Dispatch & 100% Secure Checkout",
   linkText: "Shop Deals",
   linkHref: "/shop?sort=price_asc",
 };

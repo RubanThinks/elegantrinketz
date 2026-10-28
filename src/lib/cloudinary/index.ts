@@ -12,7 +12,7 @@ interface CloudinaryTransformOptions {
   height?: number;
   quality?: "auto" | number;
   format?: "auto" | "webp" | "avif" | "jpg" | "png";
-  crop?: "fill" | "fit" | "scale" | "thumb" | "limit";
+  crop?: "fill" | "fit" | "scale" | "thumb" | "limit" | "pad";
   gravity?: "auto" | "face" | "center";
   aspectRatio?: string;
 }
@@ -62,12 +62,33 @@ export function getCloudinarySrcSet(
 
 /**
  * Get a product thumbnail URL.
+ * Uses content-aware gravity (`g_auto`) to ensure fashion models and dresses
+ * are never cropped out awkwardly (e.g. cutting off heads or dress hemline).
  */
 export function getProductThumbnail(publicId: string, size = 400): string {
   return getCloudinaryUrl(publicId, {
     width: size,
     height: Math.round(size * (4 / 3)),
     crop: "fill",
+    gravity: "auto",
+    quality: "auto",
+    format: "auto",
+  });
+}
+
+/**
+ * Get an uncropped, full-garment product image URL.
+ * Preserves 100% of the original photo dimensions with subtle background padding.
+ */
+export function getProductFitUrl(
+  publicId: string,
+  width = 600,
+  height = 800
+): string {
+  return getCloudinaryUrl(publicId, {
+    width,
+    height,
+    crop: "pad",
     quality: "auto",
     format: "auto",
   });

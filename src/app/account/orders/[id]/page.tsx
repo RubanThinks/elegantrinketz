@@ -470,7 +470,10 @@ function OrderDetailContent() {
                 className="flex items-center justify-between gap-4 pt-3 first:pt-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-14 h-18 rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0">
+                  <Link
+                    href={`/products/${item.slug || item.productId}`}
+                    className="relative w-14 h-18 rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0 block hover:opacity-90 transition-opacity"
+                  >
                     {item.image ? (
                       <Image
                         src={item.image}
@@ -484,7 +487,7 @@ function OrderDetailContent() {
                         <Package className="w-6 h-6" />
                       </div>
                     )}
-                  </div>
+                  </Link>
 
                   <div className="min-w-0 space-y-0.5">
                     <Link

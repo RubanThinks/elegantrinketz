@@ -20,8 +20,8 @@ const features = [
   },
   {
     icon: MessageCircle,
-    title: "Instant WhatsApp Orders",
-    description: "Browse, choose, and order via WhatsApp — simple, personal, and hassle-free.",
+    title: "Instant Order Tracking",
+    description: "Real-time order confirmation, live status tracking, and fast express delivery.",
   },
 ];
 
