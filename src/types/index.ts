@@ -27,6 +27,7 @@ export interface UserProfile {
   role: UserRole;
   isActive: boolean;
   addresses?: Address[];
+  resellerProfile?: ResellerDetails;
   createdAt: string;
   updatedAt: string;
 }
@@ -253,6 +254,23 @@ export interface OrderTrackingHistoryItem {
   updatedBy?: string;
 }
 
+/** Order classification: direct end-customer purchase or reseller dropship */
+export type OrderType = "standard" | "reseller";
+
+/** Sender & business details for reseller blind-shipping orders */
+export interface ResellerDetails {
+  resellerName: string;
+  resellerBusinessName?: string;
+  resellerPhone: string;
+  fromAddressLine1: string;
+  fromAddressLine2?: string;
+  fromCity: string;
+  fromState: string;
+  fromPostalCode: string;
+  fromCountry?: string;
+  resellerNotes?: string;
+}
+
 export interface Order {
   id: string;
   /** Human-readable order number, e.g. ORD-20260927-0001 */
@@ -267,6 +285,11 @@ export interface Order {
   items: OrderItem[];
   shippingAddress?: Address;
   notes?: string;
+
+  /** Reseller & Dropshipping Attributes */
+  orderType?: OrderType;
+  isResellerOrder?: boolean;
+  resellerDetails?: ResellerDetails;
   /** Admin who confirmed or cancelled the order */
   confirmedBy?: string | null;
   confirmedAt?: string | null;

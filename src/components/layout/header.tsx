@@ -4,7 +4,21 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Search, Heart, ShoppingCart, User, Menu, ChevronDown } from "lucide-react";
+import {
+  Search,
+  Heart,
+  ShoppingCart,
+  User,
+  Menu,
+  ChevronDown,
+  HelpCircle,
+  Package,
+  MapPin,
+  LogOut,
+  ArrowRight,
+  Truck,
+  MessageCircle,
+} from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { mainNavigation } from "@/config/navigation";
 import { MobileDrawer } from "@/components/navigation/mobile-drawer";
@@ -18,7 +32,7 @@ import type { Category } from "@/types";
 import { cn } from "@/lib/utils";
 
 export function Header() {
-  const { isAuthenticated, user, profile } = useAuth();
+  const { isAuthenticated, user, profile, logout } = useAuth();
   const { wishlistCount } = useWishlist();
   const { itemCount } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -185,54 +199,238 @@ export function Header() {
               </a>
 
               {/* Desktop Header Search Bar (Amazon & Flipkart style) */}
-              <div className="hidden lg:block w-56 xl:w-72">
-                <HeaderSearch placeholder="Search for products, brands and more..." />
+              <div className="hidden lg:block w-52 xl:w-64">
+                <HeaderSearch placeholder="Search for products, brands..." />
               </div>
 
-              {/* Account (desktop) */}
-              <Link
-                href={isAuthenticated ? "/account" : "/login"}
-                aria-label={isAuthenticated ? "My Account" : "Sign In"}
-                className="hidden sm:inline-flex p-2 text-neutral-700 hover:text-rose-600 transition-colors focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-full items-center justify-center"
-              >
-                {isAuthenticated && user?.photoURL ? (
-                  <Image
-                    src={user.photoURL}
-                    alt={profile?.displayName || "Account"}
-                    width={22}
-                    height={22}
-                    unoptimized
-                    className="w-5 h-5 rounded-full object-cover ring-1.5 ring-rose-400"
-                  />
-                ) : (
-                  <User className={cn("w-5 h-5 stroke-[1.8]", isAuthenticated && "text-rose-600")} />
-                )}
-              </Link>
+              {/* Desktop Help & Support Quick Menu */}
+              <div className="relative group hidden lg:block">
+                <button
+                  type="button"
+                  aria-label="Help & Support"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-neutral-700 hover:text-[#881337] bg-rose-50/70 hover:bg-rose-100 border border-rose-200/90 rounded-full transition-all shadow-xs cursor-pointer select-none"
+                >
+                  <HelpCircle className="w-3.5 h-3.5 text-[#881337]" />
+                  <span>Help</span>
+                  <ChevronDown className="w-3 h-3 text-neutral-400 group-hover:rotate-180 transition-transform duration-200" />
+                </button>
 
-              {/* Wishlist */}
+                {/* Help Flyout Menu */}
+                <div className="absolute right-0 top-full pt-2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50 min-w-[240px]">
+                  <div className="bg-white border-2 border-rose-200/90 rounded-2xl shadow-xl overflow-hidden py-1 divide-y divide-rose-100/70">
+                    <div className="px-3.5 py-2.5 bg-gradient-to-r from-rose-50 to-amber-50/50">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-rose-900">
+                        Help &amp; Customer Support
+                      </p>
+                      <p className="text-[11px] text-neutral-600">
+                        Assisting you daily 10 AM - 8 PM
+                      </p>
+                    </div>
+
+                    <div className="py-1">
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 transition-colors"
+                      >
+                        <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
+                        <span>WhatsApp Chat Support</span>
+                      </a>
+
+                      <Link
+                        href="/contact"
+                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-neutral-800 hover:bg-rose-50 hover:text-[#881337] transition-colors"
+                      >
+                        <MessageCircle className="w-4 h-4 text-rose-500" />
+                        <span>Customer Help Desk</span>
+                      </Link>
+
+                      <Link
+                        href="/account/orders"
+                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-neutral-800 hover:bg-rose-50 hover:text-[#881337] transition-colors"
+                      >
+                        <Truck className="w-4 h-4 text-rose-500" />
+                        <span>Track Order Status</span>
+                      </Link>
+                    </div>
+
+                    <div className="py-1">
+                      <Link
+                        href="/shipping"
+                        className="block px-3.5 py-1.5 text-[11px] text-neutral-600 hover:text-[#881337] hover:bg-rose-50/60 transition-colors"
+                      >
+                        Shipping &amp; Delivery Policy
+                      </Link>
+                      <Link
+                        href="/returns"
+                        className="block px-3.5 py-1.5 text-[11px] text-neutral-600 hover:text-[#881337] hover:bg-rose-50/60 transition-colors"
+                      >
+                        Returns &amp; Exchanges Policy
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Circular Account Button + "Account & Help" Flyout Menu (Desktop) */}
+              <div className="relative group hidden sm:inline-block">
+                <Link
+                  href={isAuthenticated ? "/account" : "/login"}
+                  aria-label={isAuthenticated ? "My Account & Help" : "Sign In & Help"}
+                  className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-rose-200/90 bg-rose-50/70 hover:bg-rose-100 text-[#881337] hover:border-rose-300 transition-all duration-200 shadow-xs active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#881337]/20 mx-0.5 sm:mx-1 cursor-pointer overflow-hidden p-1"
+                >
+                  {isAuthenticated && user?.photoURL ? (
+                    <Image
+                      src={user.photoURL}
+                      alt={profile?.displayName || "Account"}
+                      width={32}
+                      height={32}
+                      unoptimized
+                      className="w-full h-full rounded-full object-cover ring-1 ring-rose-300"
+                    />
+                  ) : (
+                    <User className={cn("w-4 h-4 sm:w-5 sm:h-5 stroke-[2] text-[#881337]")} />
+                  )}
+                </Link>
+
+                {/* Account & Help Flyout Menu */}
+                <div className="absolute right-0 top-full pt-2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50 min-w-[270px]">
+                  <div className="bg-white border-2 border-rose-200/90 rounded-2xl shadow-xl overflow-hidden py-1 divide-y divide-rose-100/70">
+                    {/* Header Greeting */}
+                    <div className="p-3.5 bg-gradient-to-r from-rose-50 to-amber-50/50">
+                      {isAuthenticated ? (
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-rose-800">
+                            Welcome back
+                          </p>
+                          <p className="text-xs font-bold text-neutral-900 truncate">
+                            {profile?.displayName || user?.displayName || "Shopper"}
+                          </p>
+                          {user?.email && (
+                            <p className="text-[10px] text-neutral-500 truncate">{user.email}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs font-bold text-neutral-900">Welcome to {siteConfig.name}</p>
+                            <p className="text-[11px] text-neutral-500">Sign in to access your orders &amp; account</p>
+                          </div>
+                          <Link
+                            href="/login"
+                            className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#881337] to-[#500724] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs hover:opacity-95 transition-opacity"
+                          >
+                            <span>Sign In / Register</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Account Section */}
+                    <div className="py-1">
+                      <div className="px-3 py-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                          Account
+                        </p>
+                      </div>
+                      <Link
+                        href={isAuthenticated ? "/account" : "/login"}
+                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-neutral-800 hover:bg-rose-50 hover:text-[#881337] transition-colors"
+                      >
+                        <User className="w-4 h-4 text-rose-500" />
+                        <span>Profile Dashboard</span>
+                      </Link>
+                      <Link
+                        href={isAuthenticated ? "/account/orders" : "/login"}
+                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-neutral-800 hover:bg-rose-50 hover:text-[#881337] transition-colors"
+                      >
+                        <Package className="w-4 h-4 text-rose-500" />
+                        <span>Track Orders</span>
+                      </Link>
+                      <Link
+                        href={isAuthenticated ? "/account/addresses" : "/login"}
+                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-neutral-800 hover:bg-rose-50 hover:text-[#881337] transition-colors"
+                      >
+                        <MapPin className="w-4 h-4 text-rose-500" />
+                        <span>Saved Addresses &amp; Reseller</span>
+                      </Link>
+                      <Link
+                        href="/wishlist"
+                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-neutral-800 hover:bg-rose-50 hover:text-[#881337] transition-colors"
+                      >
+                        <Heart className="w-4 h-4 text-rose-500" />
+                        <span>Saved Wishlist</span>
+                      </Link>
+                    </div>
+
+                    {/* Help Section */}
+                    <div className="py-1">
+                      <div className="px-3 py-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                          Help &amp; Support
+                        </p>
+                      </div>
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 transition-colors"
+                      >
+                        <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
+                        <span>Chat on WhatsApp</span>
+                      </a>
+                      <Link
+                        href="/contact"
+                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-neutral-800 hover:bg-rose-50 hover:text-[#881337] transition-colors"
+                      >
+                        <HelpCircle className="w-4 h-4 text-rose-500" />
+                        <span>Customer Help Desk</span>
+                      </Link>
+                    </div>
+
+                    {/* Sign Out */}
+                    {isAuthenticated && (
+                      <div className="p-1">
+                        <button
+                          type="button"
+                          onClick={() => logout()}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 rounded-xl transition-colors text-left cursor-pointer"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Circular Wishlist Button */}
               <Link
                 href="/wishlist"
                 aria-label="Wishlist"
-                className="p-2 text-neutral-700 hover:text-rose-600 transition-colors relative focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-full active:scale-90"
+                className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-rose-200/90 bg-rose-50/70 hover:bg-rose-100 text-[#881337] hover:border-rose-300 transition-all duration-200 relative shadow-xs active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#881337]/20 mx-0.5 sm:mx-1 p-2"
               >
-                <Heart className="w-5 h-5 stroke-[1.8]" />
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2] text-[#881337]" />
                 {wishlistCount > 0 && (
-                  <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs animate-scale-in">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-gradient-to-r from-[#881337] to-[#be123c] text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs">
                     {wishlistCount > 99 ? "99+" : wishlistCount}
                   </span>
                 )}
                 <span className="sr-only">Wishlist ({wishlistCount})</span>
               </Link>
 
-              {/* Shopping Cart — using distinct ShoppingCart icon */}
+              {/* Circular Shopping Cart Button */}
               <Link
                 href="/cart"
                 aria-label={`Shopping Cart (${itemCount} items)`}
-                className="p-2 text-neutral-700 hover:text-rose-600 transition-colors relative focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-full active:scale-90"
+                className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-rose-200/90 bg-rose-50/70 hover:bg-rose-100 text-[#881337] hover:border-rose-300 transition-all duration-200 relative shadow-xs active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#881337]/20 mx-0.5 sm:mx-1 p-2"
               >
-                <ShoppingCart className="w-5 h-5 stroke-[1.8]" />
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2] text-[#881337]" />
                 {itemCount > 0 && (
-                  <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs animate-scale-in">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-gradient-to-r from-[#881337] to-[#be123c] text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs">
                     {itemCount > 99 ? "99+" : itemCount}
                   </span>
                 )}

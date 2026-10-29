@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Truck,
   RefreshCw,
+  Repeat,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
 import { Button } from "@/components/ui/button";
@@ -146,7 +147,7 @@ function OrdersContent() {
                 You haven&apos;t placed any orders yet
               </h3>
               <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-                Explore our handcrafted ethnic wear and bespoke pieces, add your favorite styles to bag, and order seamlessly via WhatsApp.
+                Explore our handcrafted ethnic wear and bespoke pieces, add your favorite styles to bag, and enjoy express delivery to your doorstep.
               </p>
             </div>
             <Link href="/shop">
@@ -168,7 +169,7 @@ function OrdersContent() {
                   {/* Order Card Header */}
                   <div className="bg-neutral-50/70 p-4 sm:p-5 border-b border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           href={`/account/orders/${order.id}`}
                           className="font-mono font-bold text-sm text-neutral-900 hover:text-rose-600 transition-colors"
@@ -176,6 +177,12 @@ function OrdersContent() {
                           {order.orderNumber}
                         </Link>
                         {getStatusBadge(order.status)}
+                        {order.isResellerOrder && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-900 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-full">
+                            <Repeat className="w-2.5 h-2.5 text-purple-700" />
+                            <span>Reseller Order</span>
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-neutral-500">
                         Placed on{" "}
@@ -273,7 +280,7 @@ function OrdersContent() {
                     <p className="flex items-center gap-1.5">
                       <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
                       <span>
-                        Ordering & payment handled directly with our styling team on WhatsApp.
+                        Need assistance or delivery updates? Connect with our support team on WhatsApp.
                       </span>
                     </p>
 

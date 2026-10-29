@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   ClipboardList,
@@ -16,6 +16,8 @@ import {
   AlertTriangle,
   ShoppingBag,
   Truck,
+  Repeat,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -260,7 +262,18 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // Metrics summary
+  // Metrics & Filtering
+  const [selectedOrderType, setSelectedOrderType] = useState<"all" | "standard" | "reseller">("all");
+
+  const resellerCount = orders.filter((o) => o.isResellerOrder).length;
+  const directCount = orders.filter((o) => !o.isResellerOrder).length;
+
+  const filteredOrders = useMemo(() => {
+    if (selectedOrderType === "all") return orders;
+    if (selectedOrderType === "reseller") return orders.filter((o) => o.isResellerOrder);
+    return orders.filter((o) => !o.isResellerOrder);
+  }, [orders, selectedOrderType]);
+
   const totalCount = orders.length;
   const pendingCount = orders.filter((o) => o.status === "pending").length;
   const confirmedCount = orders.filter((o) => o.status === "confirmed").length;
@@ -354,12 +367,22 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
         <div className="p-4 rounded-xl border border-neutral-200 bg-white shadow-2xs space-y-1">
           <p className="text-[11px] uppercase tracking-wider text-neutral-500 font-medium">
             Total Orders
           </p>
           <p className="text-xl sm:text-2xl font-bold text-neutral-900">{totalCount}</p>
+        </div>
+
+        <div className="p-4 rounded-xl border border-purple-200 bg-purple-50/60 shadow-2xs space-y-1">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] uppercase tracking-wider text-purple-900 font-semibold">
+              Reseller (Dropship)
+            </p>
+            <Repeat className="w-3.5 h-3.5 text-purple-700" />
+          </div>
+          <p className="text-xl sm:text-2xl font-bold text-purple-950">{resellerCount}</p>
         </div>
 
         <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 shadow-2xs space-y-1">
@@ -376,7 +399,7 @@ export default function AdminOrdersPage() {
 
         <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 shadow-2xs space-y-1">
           <p className="text-[11px] uppercase tracking-wider text-emerald-800 font-semibold">
-            Confirmed & Deducted
+            Confirmed &amp; Deducted
           </p>
           <p className="text-xl sm:text-2xl font-bold text-emerald-900">{confirmedCount}</p>
         </div>
@@ -421,13 +444,53 @@ export default function AdminOrdersPage() {
           )}
         </form>
 
-        <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-neutral-100 text-xs">
-          <div className="flex items-center gap-1.5 text-neutral-500 font-medium">
-            <Filter className="w-3.5 h-3.5" />
-            <span>Status Filter:</span>
+        <div className="space-y-2 pt-2 border-t border-neutral-100 text-xs">
+          {/* Order Classification Filter (Direct vs Reseller) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-neutral-500 font-semibold text-[11px] uppercase tracking-wider mr-1">
+              Order Type:
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedOrderType("all")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                selectedOrderType === "all"
+                  ? "bg-neutral-900 text-white"
+                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+              }`}
+            >
+              All Types ({totalCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedOrderType("standard")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                selectedOrderType === "standard"
+                  ? "bg-[#881337] text-white"
+                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+              }`}
+            >
+              Direct Orders ({directCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedOrderType("reseller")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                selectedOrderType === "reseller"
+                  ? "bg-purple-700 text-white shadow-xs"
+                  : "bg-purple-50 text-purple-800 border border-purple-200 hover:bg-purple-100"
+              }`}
+            >
+              <Repeat className="w-3 h-3" />
+              <span>Reseller Dropship ({resellerCount})</span>
+            </button>
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
+          {/* Fulfillment Status Filter */}
+          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-neutral-100/60">
+            <span className="text-neutral-500 font-semibold text-[11px] uppercase tracking-wider mr-1">
+              Status:
+            </span>
             {[
               { id: "all", label: "All" },
               { id: "pending", label: "Pending" },
@@ -441,7 +504,7 @@ export default function AdminOrdersPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setSelectedStatus(tab.id as OrderStatus | "all")}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                   selectedStatus === tab.id
                     ? "bg-neutral-900 text-white"
                     : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
@@ -485,9 +548,9 @@ export default function AdminOrdersPage() {
             <table className="w-full text-left text-xs">
               <thead className="bg-neutral-50/80 text-[10px] uppercase font-bold text-neutral-500 tracking-wider border-b border-neutral-200">
                 <tr>
-                  <th className="py-3 px-4">Order Number</th>
+                  <th className="py-3 px-4">Order Number &amp; Type</th>
                   <th className="py-3 px-3">Date</th>
-                  <th className="py-3 px-3">Customer</th>
+                  <th className="py-3 px-3">Party / Addresses</th>
                   <th className="py-3 px-3">Items Summary</th>
                   <th className="py-3 px-3">Total Amount</th>
                   <th className="py-3 px-3">Status</th>
@@ -495,21 +558,33 @@ export default function AdminOrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
-                {orders.map((order) => {
-                  const itemCount = order.items?.reduce((sum, i) => sum + i.quantity, 0) || 0;
+                {filteredOrders.map((order: Order) => {
+                  const itemCount = order.items?.reduce((sum: number, i) => sum + i.quantity, 0) || 0;
                   const firstItem = order.items?.[0];
                   const extraItems = (order.items?.length || 0) - 1;
 
                   return (
                     <tr key={order.id} className="hover:bg-neutral-50/60 transition-colors">
-                      {/* Order Number */}
+                      {/* Order Number & Type */}
                       <td className="py-3.5 px-4 font-mono font-semibold text-neutral-900">
-                        <Link
-                          href={`/admin/orders/${order.id}`}
-                          className="hover:text-rose-600 transition-colors flex items-center gap-1.5"
-                        >
-                          <span>{order.orderNumber}</span>
-                        </Link>
+                        <div className="flex flex-col gap-1 items-start">
+                          <Link
+                            href={`/admin/orders/${order.id}`}
+                            className="hover:text-rose-600 transition-colors flex items-center gap-1.5"
+                          >
+                            <span>{order.orderNumber}</span>
+                          </Link>
+                          {order.isResellerOrder ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-200 shadow-2xs">
+                              <Repeat className="w-2.5 h-2.5 text-purple-700" />
+                              <span>RESELLER</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-medium bg-neutral-100 text-neutral-600 border border-neutral-200">
+                              <span>DIRECT</span>
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Date */}
@@ -527,12 +602,40 @@ export default function AdminOrdersPage() {
                         </div>
                       </td>
 
-                      {/* Customer */}
+                      {/* Customer / Reseller Details */}
                       <td className="py-3.5 px-3">
-                        <div className="font-medium text-neutral-900">{order.customerName}</div>
-                        <div className="text-[11px] text-neutral-500 font-mono">
-                          {order.customerPhone || order.customerEmail || "WhatsApp Direct"}
-                        </div>
+                        {order.isResellerOrder ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1 text-purple-950 font-bold text-xs">
+                              <span className="text-[9px] uppercase font-black text-purple-700 bg-purple-100 px-1 rounded">
+                                From
+                              </span>
+                              <span className="truncate max-w-[150px]">
+                                {order.resellerDetails?.resellerBusinessName || order.resellerDetails?.resellerName || order.customerName}
+                              </span>
+                            </div>
+                            {order.shippingAddress && (
+                              <div className="flex items-center gap-1 text-neutral-700 text-xs font-medium">
+                                <span className="text-[9px] uppercase font-black text-neutral-500 bg-neutral-100 px-1 rounded">
+                                  To
+                                </span>
+                                <span className="truncate max-w-[150px]">
+                                  {order.shippingAddress.fullName} ({order.shippingAddress.city})
+                                </span>
+                              </div>
+                            )}
+                            <div className="text-[10px] text-neutral-400 font-mono">
+                              Ph: {order.resellerDetails?.resellerPhone || order.customerPhone}
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="font-medium text-neutral-900">{order.customerName}</div>
+                            <div className="text-[11px] text-neutral-500 font-mono">
+                              {order.customerPhone || order.customerEmail || "WhatsApp Direct"}
+                            </div>
+                          </div>
+                        )}
                       </td>
 
                       {/* Items Summary */}

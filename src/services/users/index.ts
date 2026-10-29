@@ -40,6 +40,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
       role: (data.role as UserRole) || "customer",
       isActive: data.isActive !== false,
       addresses: data.addresses || [],
+      resellerProfile: data.resellerProfile || undefined,
       createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
       updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt || new Date().toISOString(),
     };
@@ -121,6 +122,26 @@ export async function syncGoogleUserProfile(firebaseUser: User): Promise<UserPro
 }
 
 /**
+ * Recursively removes undefined fields from an object or array to prevent Firestore update errors.
+ */
+function removeUndefinedFields<T>(obj: T): T {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) {
+    return obj.map((item) => removeUndefinedFields(item)) as unknown as T;
+  }
+  if (typeof obj === "object" && !(obj instanceof Date)) {
+    const cleaned: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      if (value !== undefined) {
+        cleaned[key] = removeUndefinedFields(value);
+      }
+    }
+    return cleaned as T;
+  }
+  return obj;
+}
+
+/**
  * Update allowed customer profile fields.
  * Explicitly rejects client-side attempts to modify role or isActive status.
  */
@@ -131,6 +152,7 @@ export async function updateUserProfile(
     phone?: string;
     photoURL?: string | null;
     addresses?: UserProfile["addresses"];
+    resellerProfile?: UserProfile["resellerProfile"];
   }
 ): Promise<void> {
   const db = getFirebaseDb();
@@ -153,8 +175,13 @@ export async function updateUserProfile(
   if (allowedUpdates.addresses !== undefined) {
     cleanPayload.addresses = allowedUpdates.addresses;
   }
+  if (allowedUpdates.resellerProfile !== undefined) {
+    cleanPayload.resellerProfile = allowedUpdates.resellerProfile;
+  }
 
-  await updateDoc(userRef, cleanPayload);
+  // Ensure no nested undefined fields are passed to Firestore
+  const sanitized = removeUndefinedFields(cleanPayload);
+  await updateDoc(userRef, sanitized as Record<string, unknown>);
 }
 
 /**
@@ -214,6 +241,7 @@ export async function findCustomerByEmail(email: string): Promise<UserProfile | 
       role: (data.role as UserRole) || "customer",
       isActive: data.isActive !== false,
       addresses: data.addresses || [],
+      resellerProfile: data.resellerProfile || undefined,
       createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
       updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt || new Date().toISOString(),
     };

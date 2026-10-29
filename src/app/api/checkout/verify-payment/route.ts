@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyRazorpaySignature } from "@/lib/razorpay/server";
 import { createPaidOnlineOrder } from "@/services/orders";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
-import type { Address } from "@/types";
+import type { Address, OrderType, ResellerDetails } from "@/types";
 
 interface VerifyPaymentRequestBody {
   razorpayOrderId: string;
@@ -26,6 +26,9 @@ interface VerifyPaymentRequestBody {
   }>;
   totalAmount: number;
   notes?: string;
+  orderType?: OrderType;
+  isResellerOrder?: boolean;
+  resellerDetails?: ResellerDetails;
 }
 
 export async function POST(request: Request) {
@@ -69,6 +72,9 @@ export async function POST(request: Request) {
       items,
       totalAmount,
       notes,
+      orderType,
+      isResellerOrder,
+      resellerDetails,
     } = body;
 
     // 1. Basic validation
@@ -123,6 +129,9 @@ export async function POST(request: Request) {
       items,
       totalAmount,
       notes,
+      orderType,
+      isResellerOrder,
+      resellerDetails,
     });
 
     if (!orderResult.success) {

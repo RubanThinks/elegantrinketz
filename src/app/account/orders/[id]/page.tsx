@@ -22,6 +22,8 @@ import {
   Calendar,
   Sparkles,
   RefreshCw,
+  Repeat,
+  Building2,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
 import { Button } from "@/components/ui/button";
@@ -191,6 +193,12 @@ function OrderDetailContent() {
                   {order.orderNumber}
                 </h1>
                 {getStatusBadge(order.status)}
+                {order.isResellerOrder && (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-purple-800 bg-purple-50 border border-purple-200 px-2.5 py-0.5 rounded-full">
+                    <Repeat className="w-3 h-3 text-purple-600" />
+                    Reseller Dropship
+                  </span>
+                )}
               </div>
               <p className="text-xs text-neutral-500 mt-0.5">
                 Placed on{" "}
@@ -452,6 +460,111 @@ function OrderDetailContent() {
           </div>
         )}
 
+        {/* Shipping & Dispatch Information */}
+        <div className="border border-neutral-200 rounded-2xl bg-white p-5 shadow-2xs space-y-4">
+          <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+            <h2 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-neutral-700" />
+              <span>{order.isResellerOrder ? "Reseller Dispatch & Delivery Addresses" : "Delivery Address"}</span>
+            </h2>
+            {order.isResellerOrder && (
+              <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <Repeat className="w-3 h-3 text-purple-600" />
+                Blind-Shipped (Direct to Client)
+              </span>
+            )}
+          </div>
+
+          {order.isResellerOrder && order.resellerDetails ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Sender / From Card */}
+              <div className="p-4 rounded-xl border border-purple-200 bg-purple-50/40 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-purple-900 uppercase tracking-wider">
+                  <Building2 className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Sender Details (From Address)</span>
+                </div>
+                <div className="text-xs text-neutral-700 space-y-0.5 leading-relaxed">
+                  <p className="font-semibold text-neutral-900">
+                    {order.resellerDetails.resellerName}
+                    {order.resellerDetails.resellerBusinessName && (
+                      <span className="text-neutral-500 font-normal"> ({order.resellerDetails.resellerBusinessName})</span>
+                    )}
+                  </p>
+                  <p className="text-neutral-600">{order.resellerDetails.fromAddressLine1}</p>
+                  {order.resellerDetails.fromAddressLine2 && (
+                    <p className="text-neutral-600">{order.resellerDetails.fromAddressLine2}</p>
+                  )}
+                  <p className="text-neutral-600">
+                    {order.resellerDetails.fromCity}, {order.resellerDetails.fromState} - {order.resellerDetails.fromPostalCode}
+                  </p>
+                  <p className="font-medium text-neutral-800 pt-1">
+                    Phone: {order.resellerDetails.resellerPhone}
+                  </p>
+                </div>
+              </div>
+
+              {/* Recipient / To Card */}
+              <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-900 uppercase tracking-wider">
+                  <MapPin className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Customer Delivery (To Address)</span>
+                </div>
+                <div className="text-xs text-neutral-700 space-y-0.5 leading-relaxed">
+                  <p className="font-semibold text-neutral-900">
+                    {order.shippingAddress?.fullName || order.customerName || "Customer"}
+                  </p>
+                  {order.shippingAddress ? (
+                    <>
+                      <p className="text-neutral-600">
+                        {order.shippingAddress.line1 || (order.shippingAddress as Record<string, any>).addressLine1}
+                      </p>
+                      {(order.shippingAddress.line2 || (order.shippingAddress as Record<string, any>).addressLine2) && (
+                        <p className="text-neutral-600">
+                          {order.shippingAddress.line2 || (order.shippingAddress as Record<string, any>).addressLine2}
+                        </p>
+                      )}
+                      <p className="text-neutral-600">
+                        {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.postalCode}
+                      </p>
+                      <p className="font-medium text-neutral-800 pt-1">
+                        Phone: {order.shippingAddress.phone || order.customerPhone || "—"}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-neutral-500 italic">Address details pending</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50 text-xs text-neutral-700 space-y-1">
+              <p className="font-semibold text-neutral-900">
+                {order.shippingAddress?.fullName || order.customerName || "Customer"}
+              </p>
+              {order.shippingAddress ? (
+                <>
+                  <p className="text-neutral-600">
+                    {order.shippingAddress.line1 || (order.shippingAddress as Record<string, any>).addressLine1}
+                  </p>
+                  {(order.shippingAddress.line2 || (order.shippingAddress as Record<string, any>).addressLine2) && (
+                    <p className="text-neutral-600">
+                      {order.shippingAddress.line2 || (order.shippingAddress as Record<string, any>).addressLine2}
+                    </p>
+                  )}
+                  <p className="text-neutral-600">
+                    {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.postalCode}
+                  </p>
+                  <p className="font-medium text-neutral-800 pt-1">
+                    Phone: {order.shippingAddress.phone || order.customerPhone || "—"}
+                  </p>
+                </>
+              ) : (
+                <p className="text-neutral-500 italic">Standard store packaging</p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Order Details Card */}
         <div className="border border-neutral-200 rounded-2xl bg-white overflow-hidden shadow-2xs">
           <div className="p-4 sm:p-5 border-b border-neutral-100 flex items-center justify-between">
@@ -531,7 +644,7 @@ function OrderDetailContent() {
 
           <div className="bg-neutral-50/70 p-4 border-t border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-neutral-500">
             <p>
-              Fulfillment, custom alterations, and shipping details are confirmed on WhatsApp.
+              Need assistance or delivery updates? Connect with our support team on WhatsApp.
             </p>
             <span className="font-mono font-bold text-neutral-900 text-sm">
               Subtotal: {formatPrice(order.totalAmount || 0)}

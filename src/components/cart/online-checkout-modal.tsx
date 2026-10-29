@@ -14,6 +14,11 @@ import {
   Zap,
   MapPin,
   Check,
+  User,
+  Repeat,
+  Building2,
+  PackageCheck,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import { useCart } from "@/providers/cart-provider";
@@ -23,7 +28,8 @@ import { formatPrice } from "@/config/constants";
 import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { INDIAN_STATES, getDistrictsForState } from "@/config/india-locations";
-import type { Address, CartItem } from "@/types";
+import { cn } from "@/lib/utils";
+import type { Address, CartItem, OrderType, ResellerDetails } from "@/types";
 import type { RazorpayOptions, RazorpaySuccessResponse } from "@/types/razorpay";
 
 export interface OnlineCheckoutModalProps {
@@ -69,7 +75,98 @@ function CheckoutModalContent({
   const [saveAddressToProfile, setSaveAddressToProfile] = useState<boolean>(true);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(defaultAddr?.id || null);
 
+  // Order Classification: Standard (Direct) vs Reseller (Dropship)
+  const [orderType, setOrderType] = useState<OrderType>("standard");
+
+  // Reseller Sender (From Address) Details
+  const initialReseller = userProfile?.resellerProfile;
+  const [resellerName, setResellerName] = useState(
+    initialReseller?.resellerName || userProfile?.displayName || ""
+  );
+  const [resellerBusinessName, setResellerBusinessName] = useState(
+    initialReseller?.resellerBusinessName || ""
+  );
+  const [resellerPhone, setResellerPhone] = useState(
+    initialReseller?.resellerPhone || userProfile?.phone || ""
+  );
+  const [resellerAddressLine1, setResellerAddressLine1] = useState(
+    initialReseller?.fromAddressLine1 || ""
+  );
+  const [resellerAddressLine2, setResellerAddressLine2] = useState(
+    initialReseller?.fromAddressLine2 || ""
+  );
+  const [resellerState, setResellerState] = useState(
+    initialReseller?.fromState || "Tamil Nadu"
+  );
+  const [resellerCity, setResellerCity] = useState(
+    initialReseller?.fromCity || "Salem"
+  );
+  const [isResellerCustomCity, setIsResellerCustomCity] = useState(false);
+  const [resellerPostalCode, setResellerPostalCode] = useState(
+    initialReseller?.fromPostalCode || ""
+  );
+  const [saveResellerDetails, setSaveResellerDetails] = useState(true);
+
+  // Auto-restore saved reseller sender profile from cloud profile or localStorage
+  useEffect(() => {
+    if (userProfile?.resellerProfile) {
+      const rp = userProfile.resellerProfile;
+      if (rp.resellerName) setResellerName(rp.resellerName);
+      if (rp.resellerBusinessName) setResellerBusinessName(rp.resellerBusinessName);
+      if (rp.resellerPhone) setResellerPhone(rp.resellerPhone);
+      if (rp.fromAddressLine1) setResellerAddressLine1(rp.fromAddressLine1);
+      if (rp.fromAddressLine2) setResellerAddressLine2(rp.fromAddressLine2);
+      if (rp.fromState) setResellerState(rp.fromState);
+      if (rp.fromCity) setResellerCity(rp.fromCity);
+      if (rp.fromPostalCode) setResellerPostalCode(rp.fromPostalCode);
+      return;
+    }
+    try {
+      const saved = localStorage.getItem("reseller_sender_profile");
+      if (saved) {
+        const p = JSON.parse(saved);
+        if (p.resellerName) setResellerName(p.resellerName);
+        if (p.resellerBusinessName) setResellerBusinessName(p.resellerBusinessName);
+        if (p.resellerPhone) setResellerPhone(p.resellerPhone);
+        if (p.resellerAddressLine1) setResellerAddressLine1(p.resellerAddressLine1);
+        if (p.resellerAddressLine2) setResellerAddressLine2(p.resellerAddressLine2);
+        if (p.resellerState) setResellerState(p.resellerState);
+        if (p.resellerCity) setResellerCity(p.resellerCity);
+        if (p.resellerPostalCode) setResellerPostalCode(p.resellerPostalCode);
+      }
+    } catch {}
+  }, [userProfile?.resellerProfile]);
+
   const availableDistricts = React.useMemo(() => getDistrictsForState(state), [state]);
+  const availableResellerDistricts = React.useMemo(
+    () => getDistrictsForState(resellerState),
+    [resellerState]
+  );
+
+  const handleResellerStateChange = (newState: string) => {
+    setResellerState(newState);
+    const districts = getDistrictsForState(newState);
+    if (districts.length > 0) {
+      if (districts.includes(resellerCity)) {
+        setIsResellerCustomCity(false);
+      } else {
+        setResellerCity(districts[0]);
+        setIsResellerCustomCity(false);
+      }
+    } else {
+      setIsResellerCustomCity(true);
+    }
+  };
+
+  const handleResellerDistrictChange = (val: string) => {
+    if (val === "__custom__") {
+      setIsResellerCustomCity(true);
+      setResellerCity("");
+    } else {
+      setIsResellerCustomCity(false);
+      setResellerCity(val);
+    }
+  };
 
   const handleStateChange = (newState: string) => {
     setState(newState);
@@ -118,21 +215,68 @@ function CheckoutModalContent({
   };
 
   const persistAddressIfRequested = async () => {
-    if (!user?.uid || !saveAddressToProfile) return;
     try {
+      if (orderType === "reseller") {
+        // 1. Save Reseller Sender Profile to cloud user profile
+        if (saveResellerDetails && user?.uid) {
+          const resPayload: Record<string, string> = {
+            resellerName: resellerName.trim(),
+            resellerPhone: resellerPhone.trim(),
+            fromAddressLine1: resellerAddressLine1.trim(),
+            fromCity: resellerCity.trim(),
+            fromState: resellerState.trim(),
+            fromPostalCode: resellerPostalCode.trim(),
+            fromCountry: "India",
+          };
+          if (resellerBusinessName.trim()) {
+            resPayload.resellerBusinessName = resellerBusinessName.trim();
+          }
+          if (resellerAddressLine2.trim()) {
+            resPayload.fromAddressLine2 = resellerAddressLine2.trim();
+          }
+          await updateUserProfile(user.uid, {
+            resellerProfile: resPayload as any,
+          });
+        }
+
+        // 2. If reseller opts to save customer address, save with label 'Client: ...' and NEVER override personal default
+        if (saveAddressToProfile && user?.uid) {
+          const existingList: Address[] = userProfile?.addresses || [];
+          const clientLabel = `Client: ${fullName.trim()}`;
+          const newClientAddr: Address = {
+            id: `client-addr-${Date.now()}`,
+            label: clientLabel,
+            fullName: fullName.trim(),
+            phone: phone.trim(),
+            line1: addressLine1.trim(),
+            city: city.trim(),
+            state: state.trim(),
+            postalCode: postalCode.trim(),
+            country: "India",
+            isDefault: false, // Strictly preserve reseller's default personal home address
+            ...(addressLine2.trim() ? { line2: addressLine2.trim() } : {}),
+          };
+          await updateUserProfile(user.uid, { addresses: [newClientAddr, ...existingList] });
+          await refreshProfile();
+        }
+        return;
+      }
+
+      // STANDARD PERSONAL ORDER:
+      if (!user?.uid || !saveAddressToProfile) return;
       const existingList: Address[] = userProfile?.addresses || [];
       const newAddr: Address = {
         id: selectedAddressId || `addr-${Date.now()}`,
-        label: "Saved Address",
+        label: "Home",
         fullName: fullName.trim(),
         phone: phone.trim(),
         line1: addressLine1.trim(),
-        line2: addressLine2.trim() || undefined,
         city: city.trim(),
         state: state.trim(),
         postalCode: postalCode.trim(),
         country: "India",
         isDefault: true,
+        ...(addressLine2.trim() ? { line2: addressLine2.trim() } : {}),
       };
 
       const updated: Address[] = existingList.map((a) => ({ ...a, isDefault: false }));
@@ -165,17 +309,64 @@ function CheckoutModalContent({
     setErrorMessage(null);
 
     // Validation
-    if (!fullName.trim()) {
-      setErrorMessage("Please enter your full name.");
-      return;
-    }
-    if (!phone.trim() || phone.replace(/\D/g, "").length < 10) {
-      setErrorMessage("Please enter a valid 10-digit phone number.");
-      return;
-    }
-    if (!addressLine1.trim() || !city.trim() || !state.trim() || !postalCode.trim()) {
-      setErrorMessage("Please complete all required shipping address fields.");
-      return;
+    const isReseller = orderType === "reseller";
+
+    if (isReseller) {
+      if (!resellerName.trim()) {
+        setErrorMessage("Please enter your Reseller Name / Business Name (Sender).");
+        return;
+      }
+      if (!resellerPhone.trim() || resellerPhone.replace(/\D/g, "").length < 10) {
+        setErrorMessage("Please enter a valid 10-digit sender phone number.");
+        return;
+      }
+      if (!resellerAddressLine1.trim() || !resellerCity.trim() || !resellerState.trim() || !resellerPostalCode.trim()) {
+        setErrorMessage("Please complete all required Sender (From Address) fields.");
+        return;
+      }
+      if (!fullName.trim()) {
+        setErrorMessage("Please enter your Customer's Full Name (Recipient).");
+        return;
+      }
+      if (!phone.trim() || phone.replace(/\D/g, "").length < 10) {
+        setErrorMessage("Please enter your Customer's 10-digit delivery phone number.");
+        return;
+      }
+      if (!addressLine1.trim() || !city.trim() || !state.trim() || !postalCode.trim()) {
+        setErrorMessage("Please complete all required Customer Delivery Address fields.");
+        return;
+      }
+
+      if (saveResellerDetails) {
+        try {
+          localStorage.setItem(
+            "reseller_sender_profile",
+            JSON.stringify({
+              resellerName: resellerName.trim(),
+              resellerBusinessName: resellerBusinessName.trim(),
+              resellerPhone: resellerPhone.trim(),
+              resellerAddressLine1: resellerAddressLine1.trim(),
+              resellerAddressLine2: resellerAddressLine2.trim(),
+              resellerState: resellerState.trim(),
+              resellerCity: resellerCity.trim(),
+              resellerPostalCode: resellerPostalCode.trim(),
+            })
+          );
+        } catch {}
+      }
+    } else {
+      if (!fullName.trim()) {
+        setErrorMessage("Please enter your full name.");
+        return;
+      }
+      if (!phone.trim() || phone.replace(/\D/g, "").length < 10) {
+        setErrorMessage("Please enter a valid 10-digit phone number.");
+        return;
+      }
+      if (!addressLine1.trim() || !city.trim() || !state.trim() || !postalCode.trim()) {
+        setErrorMessage("Please complete all required shipping address fields.");
+        return;
+      }
     }
 
     const shippingAddress: Address = {
@@ -189,6 +380,24 @@ function CheckoutModalContent({
       postalCode: postalCode.trim(),
       country: "India",
     };
+
+    const resellerDetailsPayload: ResellerDetails | undefined = isReseller
+      ? {
+          resellerName: resellerName.trim(),
+          resellerBusinessName: resellerBusinessName.trim() || undefined,
+          resellerPhone: resellerPhone.trim(),
+          fromAddressLine1: resellerAddressLine1.trim(),
+          fromAddressLine2: resellerAddressLine2.trim() || undefined,
+          fromCity: resellerCity.trim(),
+          fromState: resellerState.trim(),
+          fromPostalCode: resellerPostalCode.trim(),
+          fromCountry: "India",
+          resellerNotes: notes.trim() || undefined,
+        }
+      : undefined;
+
+    const billingCustomerName = isReseller ? resellerName.trim() : fullName.trim();
+    const billingCustomerPhone = isReseller ? resellerPhone.trim() : phone.trim();
 
     setIsProcessing(true);
     setStatusMessage("Validating live inventory and initializing payment...");
@@ -207,9 +416,9 @@ function CheckoutModalContent({
         body: JSON.stringify({
           items,
           customerInfo: {
-            name: fullName.trim(),
+            name: billingCustomerName,
             email: email.trim() || undefined,
-            phone: phone.trim(),
+            phone: billingCustomerPhone,
           },
         }),
       });
@@ -238,12 +447,12 @@ function CheckoutModalContent({
           : `Order ${orderData.receipt} (${items.length} items)`,
         order_id: orderData.orderId,
         prefill: {
-          name: fullName.trim(),
+          name: billingCustomerName,
           email: email.trim() || undefined,
-          contact: phone.trim(),
+          contact: billingCustomerPhone,
         },
         theme: {
-          color: "#18181b", // Sleek neutral-900 luxury tone
+          color: isReseller ? "#4c1d95" : "#18181b", // Distinct purple for reseller or sleek neutral
         },
         modal: {
           ondismiss: () => {
@@ -262,11 +471,14 @@ function CheckoutModalContent({
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
-                customerName: fullName.trim(),
-                customerPhone: phone.trim(),
+                customerName: billingCustomerName,
+                customerPhone: billingCustomerPhone,
                 customerEmail: email.trim() || null,
                 userId: user?.uid || null,
                 shippingAddress,
+                orderType,
+                isResellerOrder: isReseller,
+                resellerDetails: resellerDetailsPayload,
                 items: orderData.validatedItems.map((vi: {
                   productId: string;
                   productName: string;
@@ -447,62 +659,302 @@ function CheckoutModalContent({
         </div>
 
         <form id="online-checkout-form" onSubmit={handlePayNow} className="space-y-4">
-          {/* Contact Details */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2.5">
-              1. Contact Information
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Full Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Priya Sharma"
-                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Mobile Number <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="10-digit mobile number"
-                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Email Address <span className="text-neutral-400 font-light">(for receipt & updates)</span>
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="priya@example.com"
-                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
-              </div>
+          {/* Order Classification Tabs: Direct Order vs Reseller Dropship Order */}
+          <div className="space-y-2 pb-3 border-b border-neutral-200">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 block">
+              Choose Order Type
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setOrderType("standard")}
+                className={cn(
+                  "p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  orderType === "standard"
+                    ? "border-[#881337] bg-rose-50/80 text-rose-950 ring-2 ring-[#881337]/30 shadow-xs"
+                    : "border-neutral-200 bg-white hover:border-neutral-300 text-neutral-700"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-[#881337]" />
+                    <span className="text-xs font-bold font-flipkart">Direct Order</span>
+                  </div>
+                  {orderType === "standard" && (
+                    <span className="w-2 h-2 rounded-full bg-[#881337]" />
+                  )}
+                </div>
+                <p className="text-[11px] text-neutral-500 mt-1 leading-snug">
+                  Personal purchase · Shipped directly from our boutique to your address
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setOrderType("reseller")}
+                className={cn(
+                  "p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  orderType === "reseller"
+                    ? "border-purple-600 bg-purple-50/80 text-purple-950 ring-2 ring-purple-600/30 shadow-xs"
+                    : "border-neutral-200 bg-white hover:border-neutral-300 text-neutral-700"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Repeat className="w-4 h-4 text-purple-600" />
+                    <span className="text-xs font-bold font-flipkart">Reseller Order</span>
+                  </div>
+                  <span className="text-[9px] bg-purple-200 text-purple-900 px-1.5 py-0.2 rounded font-bold uppercase">
+                    Dropship
+                  </span>
+                </div>
+                <p className="text-[11px] text-neutral-500 mt-1 leading-snug">
+                  Shipping to your customer · Custom Sender (From) details &amp; zero boutique branding
+                </p>
+              </button>
             </div>
           </div>
 
-          {/* Shipping Address */}
+          {/* Reseller Blind-Shipping Guarantee Banner */}
+          {orderType === "reseller" && (
+            <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-950 text-xs space-y-1 animate-in fade-in-50 duration-150">
+              <div className="flex items-center gap-2 font-bold text-purple-900">
+                <PackageCheck className="w-4 h-4 text-purple-600 shrink-0" />
+                <span>White-Label Reseller Dispatch Guarantee</span>
+              </div>
+              <p className="text-[11px] text-purple-800 leading-relaxed">
+                Your parcel will be shipped with <strong>YOUR name, business &amp; address printed as the Sender (From Address)</strong>. 
+                No boutique invoices, price tags, or store branding will be included inside the package.
+              </p>
+            </div>
+          )}
+
+          {/* RESELLER MODE: SENDER (FROM ADDRESS) SECTION */}
+          {orderType === "reseller" && (
+            <div className="p-4 rounded-2xl bg-purple-50/40 border border-purple-200 space-y-3 animate-in fade-in-50 duration-150">
+              <div className="flex items-center justify-between pb-2 border-b border-purple-100">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-1.5 font-flipkart">
+                  <Building2 className="w-3.5 h-3.5 text-purple-700" />
+                  <span>1. Sender Details (Your From Address)</span>
+                </h3>
+                <span className="text-[10px] text-purple-700 font-semibold bg-purple-100 px-2 py-0.5 rounded-full">
+                  Printed on Parcel Label
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Your Full Name <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={resellerName}
+                    onChange={(e) => setResellerName(e.target.value)}
+                    placeholder="e.g. Priya Sharma"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Your Business / Brand Name <span className="text-neutral-400 font-light">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={resellerBusinessName}
+                    onChange={(e) => setResellerBusinessName(e.target.value)}
+                    placeholder="e.g. Priya Fashions &amp; Boutique"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Sender Contact Phone <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={resellerPhone}
+                    onChange={(e) => setResellerPhone(e.target.value)}
+                    placeholder="10-digit mobile number"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white"
+                  />
+                  <p className="text-[10px] text-neutral-400 mt-0.5">
+                    Printed as sender phone on the shipping label
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Reseller Email <span className="text-neutral-400 font-light">(for payment receipt)</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="reseller@example.com"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Sender Street / Shop Address <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={resellerAddressLine1}
+                    onChange={(e) => setResellerAddressLine1(e.target.value)}
+                    placeholder="e.g. 12/B, Gandhi Road, Opp City Plaza"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:col-span-2">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      Sender State <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      required
+                      value={resellerState}
+                      onChange={(e) => handleResellerStateChange(e.target.value)}
+                      className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white text-neutral-900 font-medium cursor-pointer"
+                    >
+                      {INDIAN_STATES.map((st) => (
+                        <option key={st} value={st}>
+                          {st}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      Sender City / District <span className="text-rose-500">*</span>
+                    </label>
+                    {isResellerCustomCity ? (
+                      <input
+                        type="text"
+                        required
+                        value={resellerCity}
+                        onChange={(e) => setResellerCity(e.target.value)}
+                        placeholder="Enter City"
+                        className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white"
+                      />
+                    ) : (
+                      <select
+                        required
+                        value={availableResellerDistricts.includes(resellerCity) ? resellerCity : (resellerCity ? "__custom__" : "")}
+                        onChange={(e) => handleResellerDistrictChange(e.target.value)}
+                        className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white text-neutral-900 font-medium cursor-pointer"
+                      >
+                        {availableResellerDistricts.map((d) => (
+                          <option key={d} value={d}>
+                            {d}
+                          </option>
+                        ))}
+                        <option value="__custom__">✏️ Other / Enter Manually...</option>
+                      </select>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      Sender PIN Code <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={resellerPostalCode}
+                      onChange={(e) => setResellerPostalCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="e.g. 636001"
+                      className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2 pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-600">
+                    <input
+                      type="checkbox"
+                      checked={saveResellerDetails}
+                      onChange={(e) => setSaveResellerDetails(e.target.checked)}
+                      className="rounded text-purple-600 focus:ring-purple-500 w-3.5 h-3.5 accent-purple-600"
+                    />
+                    <span>Remember my Sender (From Address) details for future orders</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STANDARD ORDER CONTACT INFO (shown only if not in reseller mode) */}
+          {orderType === "standard" && (
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2.5">
+                1. Contact Information
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Full Name <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Priya Sharma"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Mobile Number <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="10-digit mobile number"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Email Address <span className="text-neutral-400 font-light">(for receipt & updates)</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="priya@example.com"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DELIVERY (TO ADDRESS) SECTION */}
           <div className="pt-2">
             <div className="flex items-center justify-between mb-2.5">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
-                <Truck className="w-3.5 h-3.5" />
-                <span>2. Delivery Address</span>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-700 flex items-center gap-1.5 font-flipkart">
+                <Truck className="w-3.5 h-3.5 text-[#881337]" />
+                <span>
+                  {orderType === "reseller"
+                    ? "2. Customer Delivery Details (To Address)"
+                    : "2. Delivery Address"}
+                </span>
               </h3>
 
-              {userProfile?.addresses && userProfile.addresses.length > 0 && (
+              {orderType === "standard" && userProfile?.addresses && userProfile.addresses.length > 0 && (
                 <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">
                   Auto-filled from profile
                 </span>
@@ -513,7 +965,9 @@ function CheckoutModalContent({
             {userProfile?.addresses && userProfile.addresses.length > 0 && (
               <div className="mb-3 space-y-1.5 p-2.5 rounded-xl bg-neutral-50 border border-neutral-200/80">
                 <span className="text-[11px] font-semibold text-neutral-700 block">
-                  Choose from Saved Addresses:
+                  {orderType === "reseller"
+                    ? "Quick Select Past Client Address (Optional):"
+                    : "Choose from Saved Addresses:"}
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {userProfile.addresses.map((a) => {
@@ -530,8 +984,8 @@ function CheckoutModalContent({
                         }`}
                       >
                         <MapPin className="w-3 h-3 text-rose-600" />
-                        <span>{a.label || a.city}</span>
-                        {a.isDefault && (
+                        <span>{a.label || a.fullName || a.city}</span>
+                        {orderType === "standard" && a.isDefault && (
                           <span className="text-[9px] bg-rose-100 text-rose-700 px-1 py-0.2 rounded font-semibold">
                             Default
                           </span>
@@ -545,6 +999,37 @@ function CheckoutModalContent({
             )}
 
             <div className="space-y-3">
+              {/* Customer Name and Phone when in Reseller mode */}
+              {orderType === "reseller" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-neutral-50 rounded-xl border border-neutral-200 mb-2">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      Customer Full Name <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. Ananya Sen"
+                      className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      Customer Mobile Number <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="10-digit customer mobile"
+                      className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none bg-white"
+                    />
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">
                   Flat / House No. / Building / Street <span className="text-rose-500">*</span>
@@ -675,10 +1160,14 @@ function CheckoutModalContent({
                   />
                   <div className="flex-1">
                     <p className="text-xs font-semibold text-neutral-800">
-                      Save this delivery address to my account
+                      {orderType === "reseller"
+                        ? `Save this client to my address book (as Client: ${fullName.trim() || "Customer"})`
+                        : "Save this delivery address to my account"}
                     </p>
                     <p className="text-[11px] text-neutral-500 font-light">
-                      Automatically auto-fills next time you check out or log in.
+                      {orderType === "reseller"
+                        ? "Stores this customer's details under your clients list so you can re-use it on future dropship orders without affecting your personal home address."
+                        : "Automatically auto-fills next time you check out or log in."}
                     </p>
                   </div>
                 </label>
@@ -730,6 +1219,11 @@ function CheckoutModalContent({
               <>
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 <span>Processing...</span>
+              </>
+            ) : orderType === "reseller" ? (
+              <>
+                <PackageCheck className="w-4 h-4 text-purple-300" />
+                <span>Pay {formatPrice(subtotal)} &amp; Dispatch</span>
               </>
             ) : (
               <>

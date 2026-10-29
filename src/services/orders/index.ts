@@ -22,6 +22,8 @@ import type {
   OrderStatus,
   OrderTrackingHistoryItem,
   ProductSize,
+  OrderType,
+  ResellerDetails,
 } from "@/types";
 
 const ORDERS_COLLECTION = "orders";
@@ -53,6 +55,12 @@ function mapDocToOrder(id: string, data: DocumentData): Order {
     items: Array.isArray(data.items) ? data.items : [],
     shippingAddress: data.shippingAddress || undefined,
     notes: data.notes || undefined,
+
+    // Reseller order classification
+    orderType: (data.orderType as OrderType) || (data.isResellerOrder ? "reseller" : "standard"),
+    isResellerOrder: Boolean(data.isResellerOrder || data.orderType === "reseller"),
+    resellerDetails: data.resellerDetails || undefined,
+
     confirmedBy: data.confirmedBy || null,
     confirmedAt: data.confirmedAt?.toDate?.()?.toISOString() || data.confirmedAt || null,
     cancelledAt: data.cancelledAt?.toDate?.()?.toISOString() || data.cancelledAt || null,
@@ -106,6 +114,10 @@ export interface CreateAdminOrderInput {
   notes?: string;
   adminUid: string;
   adminEmail?: string;
+  orderType?: OrderType;
+  isResellerOrder?: boolean;
+  resellerDetails?: ResellerDetails;
+  shippingAddress?: Address;
 }
 
 /**
@@ -183,6 +195,7 @@ export async function createAdminOrder(
     const totalAmount = snapshottedItems.reduce((acc, i) => acc + (i.lineTotal || (i.price * i.quantity)), 0);
     const orderNumber = generateOrderNumber();
 
+    const isReseller = Boolean(input.isResellerOrder || input.orderType === "reseller");
     const adminOrderPayload: Record<string, unknown> = {
       orderNumber,
       userId: userId || null,
@@ -194,9 +207,30 @@ export async function createAdminOrder(
       whatsappInitiated: true,
       items: snapshottedItems,
       inventoryDeducted: false,
+      orderType: isReseller ? "reseller" : "standard",
+      isResellerOrder: isReseller,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
+
+    if (input.shippingAddress) {
+      adminOrderPayload.shippingAddress = input.shippingAddress;
+    }
+
+    if (isReseller && input.resellerDetails) {
+      adminOrderPayload.resellerDetails = {
+        resellerName: input.resellerDetails.resellerName.trim(),
+        resellerBusinessName: input.resellerDetails.resellerBusinessName?.trim() || null,
+        resellerPhone: input.resellerDetails.resellerPhone.trim(),
+        fromAddressLine1: input.resellerDetails.fromAddressLine1.trim(),
+        fromAddressLine2: input.resellerDetails.fromAddressLine2?.trim() || null,
+        fromCity: input.resellerDetails.fromCity.trim(),
+        fromState: input.resellerDetails.fromState.trim(),
+        fromPostalCode: input.resellerDetails.fromPostalCode.trim(),
+        fromCountry: input.resellerDetails.fromCountry?.trim() || "India",
+        resellerNotes: input.resellerDetails.resellerNotes?.trim() || null,
+      };
+    }
 
     if (notes && notes.trim()) {
       adminOrderPayload.notes = notes.trim();
@@ -861,6 +895,9 @@ export interface CreatePaidOnlineOrderInput {
   }>;
   totalAmount: number;
   notes?: string;
+  orderType?: OrderType;
+  isResellerOrder?: boolean;
+  resellerDetails?: ResellerDetails;
 }
 
 /**
@@ -885,6 +922,9 @@ export async function createPaidOnlineOrder(
     items,
     totalAmount,
     notes,
+    orderType,
+    isResellerOrder,
+    resellerDetails,
   } = input;
 
   if (!customerName?.trim() || !customerPhone?.trim()) {
@@ -1078,6 +1118,8 @@ export async function createPaidOnlineOrder(
         inventoryDeducted: true,
         items: snapshottedItems,
         shippingAddress: sanitizedAddress,
+        orderType: isResellerOrder || orderType === "reseller" ? "reseller" : "standard",
+        isResellerOrder: Boolean(isResellerOrder || orderType === "reseller"),
         confirmedAt: serverTimestamp(),
         trackingHistory: [
           {
@@ -1094,6 +1136,21 @@ export async function createPaidOnlineOrder(
 
       if (notes && notes.trim()) {
         orderPayload.notes = notes.trim();
+      }
+
+      if ((isResellerOrder || orderType === "reseller") && resellerDetails) {
+        orderPayload.resellerDetails = {
+          resellerName: resellerDetails.resellerName.trim(),
+          resellerBusinessName: resellerDetails.resellerBusinessName?.trim() || null,
+          resellerPhone: resellerDetails.resellerPhone.trim(),
+          fromAddressLine1: resellerDetails.fromAddressLine1.trim(),
+          fromAddressLine2: resellerDetails.fromAddressLine2?.trim() || null,
+          fromCity: resellerDetails.fromCity.trim(),
+          fromState: resellerDetails.fromState.trim(),
+          fromPostalCode: resellerDetails.fromPostalCode.trim(),
+          fromCountry: resellerDetails.fromCountry?.trim() || "India",
+          resellerNotes: resellerDetails.resellerNotes?.trim() || null,
+        };
       }
 
       transaction.set(orderRef, orderPayload);

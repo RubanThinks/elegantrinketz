@@ -8,6 +8,7 @@ import {
   Plus,
   Home,
   Building,
+  Building2,
   Check,
   Edit2,
   Trash2,
@@ -68,6 +69,114 @@ function AddressesContent() {
     } else {
       setIsCustomCity(false);
       setCity(val);
+    }
+  };
+
+  // Reseller Sender Details Form State
+  const [isResellerModalOpen, setIsResellerModalOpen] = useState(false);
+  const [resellerName, setResellerName] = useState("");
+  const [resellerBusinessName, setResellerBusinessName] = useState("");
+  const [resellerPhone, setResellerPhone] = useState("");
+  const [resellerLine1, setResellerLine1] = useState("");
+  const [resellerLine2, setResellerLine2] = useState("");
+  const [resellerState, setResellerState] = useState("Tamil Nadu");
+  const [resellerCity, setResellerCity] = useState("Salem");
+  const [isResellerCustomCity, setIsResellerCustomCity] = useState(false);
+  const [resellerPostalCode, setResellerPostalCode] = useState("");
+  const [isSavingReseller, setIsSavingReseller] = useState(false);
+  const [resellerError, setResellerError] = useState<string | null>(null);
+
+  const availableResellerDistricts = React.useMemo(() => getDistrictsForState(resellerState), [resellerState]);
+
+  const handleResellerStateChange = (newState: string) => {
+    setResellerState(newState);
+    const districts = getDistrictsForState(newState);
+    if (districts.length > 0) {
+      if (districts.includes(resellerCity)) {
+        setIsResellerCustomCity(false);
+      } else {
+        setResellerCity(districts[0]);
+        setIsResellerCustomCity(false);
+      }
+    } else {
+      setIsResellerCustomCity(true);
+    }
+  };
+
+  const handleResellerDistrictChange = (val: string) => {
+    if (val === "__custom__") {
+      setIsResellerCustomCity(true);
+      setResellerCity("");
+    } else {
+      setIsResellerCustomCity(false);
+      setResellerCity(val);
+    }
+  };
+
+  const openResellerModal = () => {
+    const rp = userProfile?.resellerProfile;
+    setResellerName(rp?.resellerName || userProfile?.displayName || "");
+    setResellerBusinessName(rp?.resellerBusinessName || "");
+    setResellerPhone(rp?.resellerPhone || userProfile?.phone || "");
+    setResellerLine1(rp?.fromAddressLine1 || "");
+    setResellerLine2(rp?.fromAddressLine2 || "");
+    const rState = rp?.fromState || "Tamil Nadu";
+    setResellerState(rState);
+    const districts = getDistrictsForState(rState);
+    const rCity = rp?.fromCity || "Salem";
+    setResellerCity(rCity);
+    setIsResellerCustomCity(districts.length > 0 && !districts.includes(rCity));
+    setResellerPostalCode(rp?.fromPostalCode || "");
+    setResellerError(null);
+    setIsResellerModalOpen(true);
+  };
+
+  const handleSaveResellerProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.uid) return;
+    setResellerError(null);
+
+    if (!resellerName.trim()) {
+      setResellerError("Please enter your Reseller / Contact Name.");
+      return;
+    }
+    if (!resellerPhone.trim() || resellerPhone.replace(/\D/g, "").length < 10) {
+      setResellerError("Please enter a valid 10-digit sender phone number.");
+      return;
+    }
+    if (!resellerLine1.trim() || !resellerCity.trim() || !resellerState.trim() || !resellerPostalCode.trim()) {
+      setResellerError("Please complete all required Sender (From Address) fields.");
+      return;
+    }
+
+    setIsSavingReseller(true);
+    try {
+      const payload: Record<string, string> = {
+        resellerName: resellerName.trim(),
+        resellerPhone: resellerPhone.trim(),
+        fromAddressLine1: resellerLine1.trim(),
+        fromCity: resellerCity.trim(),
+        fromState: resellerState.trim(),
+        fromPostalCode: resellerPostalCode.trim(),
+        fromCountry: "India",
+      };
+      if (resellerBusinessName.trim()) {
+        payload.resellerBusinessName = resellerBusinessName.trim();
+      }
+      if (resellerLine2.trim()) {
+        payload.fromAddressLine2 = resellerLine2.trim();
+      }
+      await updateUserProfile(user.uid, { resellerProfile: payload as any });
+      try {
+        localStorage.setItem("reseller_sender_profile", JSON.stringify(payload));
+      } catch {}
+      await refreshProfile();
+      setIsResellerModalOpen(false);
+    } catch (err) {
+      console.error("Failed to save reseller profile:", err);
+      setResellerError("Failed to save sender profile. Please try again.");
+    } finally {
+      setIsSavingReseller(false);
     }
   };
 
@@ -134,12 +243,12 @@ function AddressesContent() {
         fullName: fullName.trim(),
         phone: phone.trim(),
         line1: line1.trim(),
-        line2: line2.trim() || undefined,
         city: city.trim(),
         state: state.trim(),
         postalCode: postalCode.trim(),
         country: "India",
         isDefault: isDefault || addresses.length === 0,
+        ...(line2.trim() ? { line2: line2.trim() } : {}),
       };
 
       if (isDefault) {
@@ -238,8 +347,80 @@ function AddressesContent() {
             Saved Delivery Addresses
           </h1>
           <p className="text-xs sm:text-sm text-neutral-500 font-light">
-            Manage your delivery locations. Your default address is automatically auto-filled during checkout.
+            Manage your personal delivery locations and your dropshipping business sender details.
           </p>
+        </div>
+
+        {/* Reseller Business Profile (Sender / From Address) Card */}
+        <div className="bg-white border border-purple-200 rounded-2xl p-5 shadow-2xs space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-100 pb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="p-2 rounded-xl bg-purple-50 text-purple-700">
+                <Building2 className="w-4 h-4" />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-bold text-neutral-900">
+                    Reseller Sender Profile (From Address)
+                  </h2>
+                  <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.2 rounded-full">
+                    Dropship Default
+                  </span>
+                </div>
+                <p className="text-[11px] text-neutral-500">
+                  This brand name and address appears as the sender (&quot;From Address&quot;) when you place Reseller orders.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={openResellerModal}
+              className="text-xs font-semibold py-1.5 px-3 rounded-xl border-purple-300 text-purple-800 hover:bg-purple-50 self-start sm:self-auto cursor-pointer"
+            >
+              <Edit2 className="w-3.5 h-3.5 mr-1" />
+              <span>{userProfile?.resellerProfile ? "Edit Sender Details" : "Set Up Sender Details"}</span>
+            </Button>
+          </div>
+
+          {userProfile?.resellerProfile ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-neutral-700 pt-1">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+                  Sender / Brand Details
+                </span>
+                <p className="font-semibold text-neutral-900">
+                  {userProfile.resellerProfile.resellerName}
+                  {userProfile.resellerProfile.resellerBusinessName && (
+                    <span className="text-purple-700 font-normal"> ({userProfile.resellerProfile.resellerBusinessName})</span>
+                  )}
+                </p>
+                <p className="text-neutral-600 font-medium">
+                  Phone: {userProfile.resellerProfile.resellerPhone}
+                </p>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+                  Dispatch / Pickup Location
+                </span>
+                <p className="text-neutral-600">
+                  {userProfile.resellerProfile.fromAddressLine1}
+                  {userProfile.resellerProfile.fromAddressLine2 ? `, ${userProfile.resellerProfile.fromAddressLine2}` : ""}
+                </p>
+                <p className="text-neutral-600">
+                  {userProfile.resellerProfile.fromCity}, {userProfile.resellerProfile.fromState} - {userProfile.resellerProfile.fromPostalCode}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 bg-purple-50/50 rounded-xl border border-dashed border-purple-200 text-xs text-purple-800 flex items-center justify-between gap-3">
+              <p>
+                No reseller dispatch details configured yet. Click <strong>Set Up Sender Details</strong> to save your business name and address for 1-click dropshipping.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Addresses Grid */}
@@ -601,6 +782,219 @@ function AddressesContent() {
                     className="text-xs font-semibold bg-neutral-900 hover:bg-black text-white px-5"
                   >
                     {isSaving ? "Saving..." : "Save Address"}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+        {/* Modal: Reseller Business Profile (Sender / From Address) */}
+        {isResellerModalOpen && (
+          <div
+            className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 isolate"
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setIsResellerModalOpen(false)}
+          >
+            <div
+              className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-neutral-200 overflow-hidden my-auto animate-scale-up"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="px-5 py-4 border-b border-purple-100 bg-purple-50/50 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-purple-700" />
+                  <h3 className="text-sm font-bold text-neutral-900">
+                    Reseller Sender Profile (From Address)
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsResellerModalOpen(false)}
+                  className="p-1 rounded-lg text-neutral-400 hover:text-neutral-900 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveResellerProfile} className="p-5 space-y-4">
+                {resellerError && (
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-900 flex items-start gap-2 text-xs">
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                    <span>{resellerError}</span>
+                  </div>
+                )}
+
+                <p className="text-xs text-neutral-500 leading-relaxed">
+                  These details will be used as the <strong>Sender (From Address)</strong> on waybills and parcels sent to your customers. Customers will see your brand and contact info.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-neutral-700">
+                      Reseller Contact Name <span className="text-purple-600">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={resellerName}
+                      onChange={(e) => setResellerName(e.target.value)}
+                      placeholder="e.g. Priya Sharma"
+                      className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-200 focus:border-purple-600 focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-neutral-700">
+                      Brand / Business Name <span className="text-neutral-400 font-light">(optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={resellerBusinessName}
+                      onChange={(e) => setResellerBusinessName(e.target.value)}
+                      placeholder="e.g. Priya Silk Boutique"
+                      className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-200 focus:border-purple-600 focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-neutral-700">
+                    Sender Phone Number <span className="text-purple-600">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={resellerPhone}
+                    onChange={(e) => setResellerPhone(e.target.value)}
+                    placeholder="10-digit mobile number for courier dispatch"
+                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-200 focus:border-purple-600 focus:outline-hidden"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-neutral-700">
+                    Sender Street Address <span className="text-purple-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={resellerLine1}
+                    onChange={(e) => setResellerLine1(e.target.value)}
+                    placeholder="House/Shop No., Street Name, Area"
+                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-200 focus:border-purple-600 focus:outline-hidden"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-neutral-700">
+                    Landmark / Locality <span className="text-neutral-400 font-light">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={resellerLine2}
+                    onChange={(e) => setResellerLine2(e.target.value)}
+                    placeholder="e.g. Near Bus Stand"
+                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-200 focus:border-purple-600 focus:outline-hidden"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-neutral-700">
+                      State <span className="text-purple-600">*</span>
+                    </label>
+                    <select
+                      required
+                      value={resellerState}
+                      onChange={(e) => handleResellerStateChange(e.target.value)}
+                      className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-200 focus:border-purple-600 focus:outline-hidden bg-white text-neutral-900 font-medium cursor-pointer"
+                    >
+                      {INDIAN_STATES.map((st) => (
+                        <option key={st} value={st}>
+                          {st}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-neutral-700">
+                        District / City <span className="text-purple-600">*</span>
+                      </label>
+                      {isResellerCustomCity && availableResellerDistricts.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsResellerCustomCity(false);
+                            if (availableResellerDistricts.length > 0) setResellerCity(availableResellerDistricts[0]);
+                          }}
+                          className="text-[10px] text-purple-600 hover:text-purple-700 underline font-medium cursor-pointer"
+                        >
+                          List view
+                        </button>
+                      )}
+                    </div>
+
+                    {isResellerCustomCity || availableResellerDistricts.length === 0 ? (
+                      <input
+                        type="text"
+                        required
+                        value={resellerCity}
+                        onChange={(e) => setResellerCity(e.target.value)}
+                        placeholder="e.g. Salem"
+                        className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-200 focus:border-purple-600 focus:outline-hidden"
+                      />
+                    ) : (
+                      <select
+                        required
+                        value={availableResellerDistricts.includes(resellerCity) ? resellerCity : (resellerCity ? "__custom__" : "")}
+                        onChange={(e) => handleResellerDistrictChange(e.target.value)}
+                        className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-200 focus:border-purple-600 focus:outline-hidden bg-white text-neutral-900 font-medium cursor-pointer"
+                      >
+                        {availableResellerDistricts.map((d) => (
+                          <option key={d} value={d}>
+                            {d}
+                          </option>
+                        ))}
+                        <option value="__custom__">✏️ Other / Enter Manually...</option>
+                      </select>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-neutral-700">
+                      PIN Code <span className="text-purple-600">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={resellerPostalCode}
+                      onChange={(e) => setResellerPostalCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="636302"
+                      className="w-full text-xs px-3 py-2.5 rounded-xl border border-neutral-200 focus:border-purple-600 focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsResellerModalOpen(false)}
+                    className="text-xs"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={isSavingReseller}
+                    className="text-xs font-semibold bg-purple-700 hover:bg-purple-800 text-white px-5"
+                  >
+                    {isSavingReseller ? "Saving..." : "Save Reseller Profile"}
                   </Button>
                 </div>
               </form>

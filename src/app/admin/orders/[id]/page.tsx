@@ -26,6 +26,9 @@ import {
   UserCheck,
   Calendar,
   Send,
+  Repeat,
+  Building2,
+  PackageCheck,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
 import { Button } from "@/components/ui/button";
@@ -84,6 +87,77 @@ export default function AdminOrderDetailPage() {
   const [trackLocation, setTrackLocation] = useState("");
   const [isUpdatingTracking, setIsUpdatingTracking] = useState(false);
   const [copiedTrack, setCopiedTrack] = useState(false);
+  const [copiedWaybill, setCopiedWaybill] = useState(false);
+  const [copiedSender, setCopiedSender] = useState(false);
+  const [copiedRecipient, setCopiedRecipient] = useState(false);
+
+  const handleCopyCompleteWaybill = () => {
+    if (!order) return;
+    const fromName = order.resellerDetails?.resellerBusinessName
+      ? `${order.resellerDetails.resellerName} (${order.resellerDetails.resellerBusinessName})`
+      : order.resellerDetails?.resellerName || "Sender";
+    const fromPhone = order.resellerDetails?.resellerPhone || "—";
+    const fromAddr = [
+      order.resellerDetails?.fromAddressLine1,
+      order.resellerDetails?.fromAddressLine2,
+      order.resellerDetails?.fromCity,
+      order.resellerDetails?.fromState,
+      order.resellerDetails?.fromPostalCode,
+      order.resellerDetails?.fromCountry || "India",
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const toName = order.shippingAddress?.fullName || order.customerName;
+    const toPhone = order.shippingAddress?.phone || order.customerPhone;
+    const toAddr = [
+      order.shippingAddress?.line1,
+      order.shippingAddress?.line2,
+      order.shippingAddress?.city,
+      order.shippingAddress?.state,
+      order.shippingAddress?.postalCode,
+      order.shippingAddress?.country || "India",
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const waybillText = `==============================
+COURIER SHIPPING WAYBILL (RESELLER BLIND SHIP)
+Order: ${order.orderNumber}
+==============================
+FROM (SENDER DETAILS):
+Name: ${fromName}
+Contact: ${fromPhone}
+Address: ${fromAddr}
+
+TO (DELIVERY RECIPIENT):
+Name: ${toName}
+Contact: ${toPhone}
+Address: ${toAddr}
+==============================`;
+
+    navigator.clipboard.writeText(waybillText);
+    setCopiedWaybill(true);
+    setTimeout(() => setCopiedWaybill(false), 2000);
+  };
+
+  const handleCopySenderAddress = () => {
+    if (!order?.resellerDetails) return;
+    const rd = order.resellerDetails;
+    const text = `${rd.resellerName}${rd.resellerBusinessName ? ` (${rd.resellerBusinessName})` : ""}\nPhone: ${rd.resellerPhone}\n${rd.fromAddressLine1}${rd.fromAddressLine2 ? `\n${rd.fromAddressLine2}` : ""}\n${rd.fromCity}, ${rd.fromState} - ${rd.fromPostalCode}`;
+    navigator.clipboard.writeText(text);
+    setCopiedSender(true);
+    setTimeout(() => setCopiedSender(false), 2000);
+  };
+
+  const handleCopyRecipientAddress = () => {
+    if (!order?.shippingAddress) return;
+    const sa = order.shippingAddress;
+    const text = `${sa.fullName}\nPhone: ${sa.phone}\n${sa.line1}${sa.line2 ? `\n${sa.line2}` : ""}\n${sa.city}, ${sa.state} - ${sa.postalCode}\n${sa.country || "India"}`;
+    navigator.clipboard.writeText(text);
+    setCopiedRecipient(true);
+    setTimeout(() => setCopiedRecipient(false), 2000);
+  };
 
   // Customer Allocation States
   const [showAllocateModal, setShowAllocateModal] = useState(false);
@@ -701,6 +775,59 @@ export default function AdminOrderDetailPage() {
         </div>
       )}
 
+      {/* Reseller Blind-Shipping Notice Banner */}
+      {order.isResellerOrder && (
+        <div className="p-4 sm:p-5 rounded-2xl border-2 border-purple-300 bg-purple-50/90 text-purple-950 text-xs space-y-3 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-xl bg-purple-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                <Repeat className="w-4 h-4" />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-sm text-purple-950 font-flipkart">
+                    RESELLER DROPSHIPPING ORDER
+                  </h3>
+                  <span className="text-[10px] uppercase font-black bg-purple-200 text-purple-900 px-2 py-0.5 rounded-full">
+                    White-Label Dispatch
+                  </span>
+                </div>
+                <p className="text-[11px] text-purple-800 font-medium">
+                  Client/Reseller: <strong>{order.resellerDetails?.resellerName}</strong>
+                  {order.resellerDetails?.resellerBusinessName ? ` (${order.resellerDetails.resellerBusinessName})` : ""}
+                  {" • "}
+                  Deliver To: <strong>{order.shippingAddress?.fullName}</strong>
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCopyCompleteWaybill}
+              className="px-4 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm shrink-0"
+            >
+              {copiedWaybill ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-300 stroke-[2.5]" />
+                  <span>Waybill Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span>Copy Courier Waybill (From &amp; To)</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="p-3 bg-white/80 rounded-xl border border-purple-200/80 text-[11px] text-purple-900 leading-relaxed">
+            ⚠️ <strong>CRITICAL COURIER INSTRUCTION:</strong> Do <u>NOT</u> ship under our boutique name. 
+            Pack in plain neutral packaging (no store branding or invoice). 
+            Affix the courier label using the <strong>Reseller as the SENDER (FROM ADDRESS)</strong> and their client as the <strong>DELIVERY RECIPIENT (TO ADDRESS)</strong>.
+          </div>
+        </div>
+      )}
+
       {/* Main Content Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Order Fulfillment & Tracking Control Center + Items (8 cols) */}
@@ -1024,36 +1151,155 @@ export default function AdminOrderDetailPage() {
             )}
           </div>
 
-          {/* Delivery & Notes Card */}
-          {(order.shippingAddress || order.notes) && (
-            <div className="border border-neutral-200 rounded-2xl bg-white p-5 shadow-2xs space-y-4">
-              <h2 className="text-sm font-bold text-neutral-900 flex items-center gap-2 border-b border-neutral-100 pb-3">
-                <MapPin className="w-4 h-4 text-neutral-500" />
-                <span>Shipping & Notes</span>
-              </h2>
+          {/* Delivery & Dispatch Addresses Card */}
+          {order.isResellerOrder ? (
+            <div className="border-2 border-purple-300 rounded-2xl bg-white p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-purple-100 pb-3">
+                <h2 className="text-sm font-bold text-purple-950 flex items-center gap-2">
+                  <Repeat className="w-4 h-4 text-purple-700" />
+                  <span>Reseller Courier Addresses</span>
+                </h2>
+                <span className="text-[10px] font-bold uppercase bg-purple-100 text-purple-900 px-2 py-0.5 rounded-full">
+                  Blind Shipping
+                </span>
+              </div>
 
+              {/* Sender Details (From Address) */}
+              <div className="p-3.5 rounded-xl bg-purple-50/70 border border-purple-200 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-[10px] uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-purple-700" />
+                    <span>SENDER (FROM ADDRESS - RESELLER)</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopySenderAddress}
+                    className="text-[10px] font-bold text-purple-700 hover:text-purple-900 underline flex items-center gap-1 cursor-pointer"
+                  >
+                    {copiedSender ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedSender ? "Copied" : "Copy Sender"}</span>
+                  </button>
+                </div>
+
+                <div className="text-neutral-800 space-y-0.5">
+                  <p className="font-bold text-sm text-purple-950">
+                    {order.resellerDetails?.resellerName || order.customerName}
+                  </p>
+                  {order.resellerDetails?.resellerBusinessName && (
+                    <p className="text-xs font-semibold text-purple-800">
+                      Brand / Store: {order.resellerDetails.resellerBusinessName}
+                    </p>
+                  )}
+                  <p className="font-mono text-neutral-700">
+                    Phone: {order.resellerDetails?.resellerPhone || order.customerPhone}
+                  </p>
+                  <p className="pt-1 text-neutral-600">
+                    {order.resellerDetails?.fromAddressLine1}
+                    {order.resellerDetails?.fromAddressLine2 ? `, ${order.resellerDetails.fromAddressLine2}` : ""}
+                  </p>
+                  <p className="text-neutral-600">
+                    {order.resellerDetails?.fromCity}, {order.resellerDetails?.fromState} - {order.resellerDetails?.fromPostalCode}
+                  </p>
+                </div>
+              </div>
+
+              {/* Recipient Details (To Address) */}
               {order.shippingAddress && (
-                <div className="text-xs text-neutral-700 space-y-1">
-                  <p className="font-semibold text-neutral-900">
-                    {order.shippingAddress.fullName}
-                  </p>
-                  <p>{order.shippingAddress.line1}</p>
-                  {order.shippingAddress.line2 && <p>{order.shippingAddress.line2}</p>}
-                  <p>
-                    {order.shippingAddress.city}, {order.shippingAddress.state}{" "}
-                    {order.shippingAddress.postalCode}
-                  </p>
-                  <p>{order.shippingAddress.country}</p>
+                <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[10px] uppercase tracking-wider text-neutral-700 flex items-center gap-1.5">
+                      <Truck className="w-3.5 h-3.5 text-neutral-600" />
+                      <span>RECIPIENT (TO ADDRESS - END CUSTOMER)</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCopyRecipientAddress}
+                      className="text-[10px] font-bold text-neutral-700 hover:text-neutral-900 underline flex items-center gap-1 cursor-pointer"
+                    >
+                      {copiedRecipient ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedRecipient ? "Copied" : "Copy Delivery"}</span>
+                    </button>
+                  </div>
+
+                  <div className="text-neutral-800 space-y-0.5">
+                    <p className="font-bold text-sm text-neutral-950">
+                      {order.shippingAddress.fullName}
+                    </p>
+                    <p className="font-mono text-neutral-700">
+                      Phone: {order.shippingAddress.phone}
+                    </p>
+                    <p className="pt-1 text-neutral-600">
+                      {order.shippingAddress.line1}
+                      {order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ""}
+                    </p>
+                    <p className="text-neutral-600">
+                      {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.postalCode}
+                    </p>
+                    <p className="text-neutral-500">{order.shippingAddress.country || "India"}</p>
+                  </div>
                 </div>
               )}
 
+              {/* 1-Click Waybill Action */}
+              <button
+                type="button"
+                onClick={handleCopyCompleteWaybill}
+                className="w-full py-2.5 px-3 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
+              >
+                {copiedWaybill ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-300 stroke-[2.5]" />
+                    <span>Courier Waybill Copied to Clipboard!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    <span>Copy Full Waybill for Courier Booking</span>
+                  </>
+                )}
+              </button>
+
               {order.notes && (
-                <div className="text-xs text-neutral-600 bg-neutral-50 p-3 rounded-lg border border-neutral-200">
-                  <p className="font-semibold text-neutral-800 mb-1">Conversation Notes:</p>
+                <div className="text-xs text-neutral-600 bg-neutral-50 p-3 rounded-xl border border-neutral-200">
+                  <p className="font-semibold text-neutral-800 mb-1">Reseller Instructions / Notes:</p>
                   <p className="italic">{order.notes}</p>
                 </div>
               )}
             </div>
+          ) : (
+            (order.shippingAddress || order.notes) && (
+              <div className="border border-neutral-200 rounded-2xl bg-white p-5 shadow-2xs space-y-4">
+                <h2 className="text-sm font-bold text-neutral-900 flex items-center gap-2 border-b border-neutral-100 pb-3">
+                  <MapPin className="w-4 h-4 text-neutral-500" />
+                  <span>Direct Delivery &amp; Notes</span>
+                </h2>
+
+                {order.shippingAddress && (
+                  <div className="text-xs text-neutral-700 space-y-1">
+                    <p className="font-semibold text-neutral-900 text-sm">
+                      {order.shippingAddress.fullName}
+                    </p>
+                    <p className="font-mono text-neutral-600">
+                      Phone: {order.shippingAddress.phone}
+                    </p>
+                    <p className="pt-1">{order.shippingAddress.line1}</p>
+                    {order.shippingAddress.line2 && <p>{order.shippingAddress.line2}</p>}
+                    <p>
+                      {order.shippingAddress.city}, {order.shippingAddress.state}{" "}
+                      {order.shippingAddress.postalCode}
+                    </p>
+                    <p>{order.shippingAddress.country}</p>
+                  </div>
+                )}
+
+                {order.notes && (
+                  <div className="text-xs text-neutral-600 bg-neutral-50 p-3 rounded-lg border border-neutral-200">
+                    <p className="font-semibold text-neutral-800 mb-1">Special Notes:</p>
+                    <p className="italic">{order.notes}</p>
+                  </div>
+                )}
+              </div>
+            )
           )}
 
           {/* Audit & Verification Card */}
